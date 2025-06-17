@@ -1,0 +1,23 @@
+{
+  "name": "@docs-site/tdoc-cli",
+  "version": "0.0.0",
+  "description": "sumu's document processing cli tool. This is a TypeScript project.",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/docs-site/tdoc-cli.git"
+  },
+  "keywords": [
+    "TypeScript",
+    "cli"
+  ],
+  "author": "sumu",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/docs-site/tdoc-cli/issues"
+  },
+  "homepage": "https://github.com/docs-site/tdoc-cli#readme"
+}
