@@ -3,6 +3,9 @@
   "version": "0.0.0",
   "description": "sumu's document processing cli tool. This is a TypeScript project.",
   "main": "src/index.ts",
+  "bin" : {
+	"tdoc": "./bin/tdoc-cli.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
 	"bin:b": "tsc src/index.ts --outDir dist",
