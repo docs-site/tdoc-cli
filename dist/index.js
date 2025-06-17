@@ -12,12 +12,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var commander_1 = require("commander");
-var package_json_1 = __importDefault(require("../package.json"));
+const commander_1 = require("commander");
+const package_json_1 = __importDefault(require("../package.json"));
 /**
  * @brief 创建commander的Command实例
  */
-var program = new commander_1.Command(package_json_1.default.name);
+const program = new commander_1.Command(package_json_1.default.name);
 /**
  * @brief 从package.json中提取项目版本和开发依赖信息
  * @returns {string} 格式化的版本信息字符串，包含:
@@ -36,13 +36,10 @@ var program = new commander_1.Command(package_json_1.default.name);
  *            eslint: ^7.0.0
  */
 function getVersionInfo() {
-    var depsInfo = Object.entries(package_json_1.default.devDependencies)
-        .map(function (_a) {
-        var name = _a[0], version = _a[1];
-        return "  ".concat(name, ": ").concat(version);
-    })
+    const depsInfo = Object.entries(package_json_1.default.devDependencies)
+        .map(([name, version]) => `  ${name}: ${version}`)
         .join('\n');
-    return "".concat(package_json_1.default.name, ": ").concat(package_json_1.default.version, "\n\ndevDependencies:\n").concat(depsInfo);
+    return `${package_json_1.default.name}: ${package_json_1.default.version}\n\ndevDependencies:\n${depsInfo}`;
 }
 program.version(getVersionInfo(), '-v, --version', '显示版本信息和依赖包');
 program.parse(); // 参数处理

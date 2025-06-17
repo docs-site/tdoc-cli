@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "bin:b": "tsc ./src/index.ts --outDir dist --rootDir ./src --lib esnext --resolveJsonModule --esModuleInterop",
+    "bin:b": "tsc --project tsconfig.prod.json",
     "bin:s": "node ./dist/index.js -v"
   },
   "repository": {
