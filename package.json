@@ -4,7 +4,9 @@
   "description": "sumu's document processing cli tool. This is a TypeScript project.",
   "main": "src/index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+	"bin:b": "tsc src/index.ts --outDir dist",
+	"bin:s": "node ./dist/index.js"
   },
   "repository": {
     "type": "git",
