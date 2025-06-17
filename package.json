@@ -3,13 +3,13 @@
   "version": "0.0.0",
   "description": "sumu's document processing cli tool. This is a TypeScript project.",
   "main": "src/index.ts",
-  "bin" : {
-	"tdoc": "./bin/tdoc-cli.js"
+  "bin": {
+    "tdoc": "./bin/tdoc-cli.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-	"bin:b": "tsc src/index.ts --outDir dist",
-	"bin:s": "node ./dist/index.js"
+    "bin:b": "tsc ./src/index.ts --outDir dist --rootDir ./src --lib esnext --resolveJsonModule --esModuleInterop",
+    "bin:s": "node ./dist/index.js -v"
   },
   "repository": {
     "type": "git",
@@ -26,6 +26,7 @@
   },
   "homepage": "https://github.com/docs-site/tdoc-cli#readme",
   "devDependencies": {
+    "commander": "^14.0.0",
     "tsx": "^4.20.3"
   }
 }
