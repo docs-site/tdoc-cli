@@ -19,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/docs-site/tdoc-cli/issues"
   },
-  "homepage": "https://github.com/docs-site/tdoc-cli#readme"
+  "homepage": "https://github.com/docs-site/tdoc-cli#readme",
+  "devDependencies": {
+    "tsx": "^4.20.3"
+  }
 }
