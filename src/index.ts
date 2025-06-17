@@ -3,16 +3,16 @@
  * File name  : index.ts
  * Author     : 苏木
  * Date       : 2025-06-17
- * Version    : 
- * Description: 
+ * Version    :
+ * Description:
  * ======================================================
  */
 
-import { Command } from 'commander'
-import pkg from '../package.json'
+import { Command } from 'commander';
+import pkg from '../package.json';
 
-/** 
- * @brief 创建commander的Command实例 
+/**
+ * @brief 创建commander的Command实例
  */
 const program = new Command(pkg.name);
 
@@ -28,7 +28,7 @@ const program = new Command(pkg.name);
  *          4. 返回包含项目名称、版本和格式化依赖信息的完整字符串
  * @example 返回格式示例:
  *          my-project: 1.0.0
- *          
+ *
  *          devDependencies:
  *            typescript: ^4.0.0
  *            eslint: ^7.0.0
@@ -40,10 +40,6 @@ function getVersionInfo(): string {
   return `${pkg.name}: ${pkg.version}\n\ndevDependencies:\n${depsInfo}`;
 }
 
-program.version(
-  getVersionInfo(),
-  '-v, --version',
-  '显示版本信息和依赖包'
-);
+program.version(getVersionInfo(), '-v, --version', '显示版本信息和依赖包');
 
 program.parse(); // 参数处理

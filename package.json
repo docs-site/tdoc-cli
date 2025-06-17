@@ -9,7 +9,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "bin:b": "tsc --project tsconfig.prod.json",
-    "bin:s": "node ./dist/index.js -v"
+    "bin:s": "node ./dist/index.js -v",
+		"format:check": "prettier . --check",
+    "format:fix": "prettier . --write"
   },
   "repository": {
     "type": "git",
@@ -27,6 +29,7 @@
   "homepage": "https://github.com/docs-site/tdoc-cli#readme",
   "devDependencies": {
     "commander": "^14.0.0",
+    "prettier": "^3.5.3",
     "tsx": "^4.20.3"
   }
 }
