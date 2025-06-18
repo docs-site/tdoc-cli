@@ -1,0 +1,21 @@
+{
+  "compress": {
+    "drop_console": true,
+    "drop_debugger": true,
+    "passes": 2,
+    "unused": true,
+    "dead_code": true
+  },
+  "mangle": {
+    "toplevel": true,
+    "properties": false
+  },
+  "output": {
+    "comments": false,
+    "beautify": false
+  },
+  "sourceMap": {
+    "filename": "output.min.js",
+    "url": "output.min.js.map"
+  }
+}

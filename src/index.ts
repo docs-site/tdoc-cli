@@ -42,4 +42,5 @@ function getVersionInfo(): string {
 
 program.version(getVersionInfo(), '-v, --version', '显示版本信息和依赖包');
 
+console.log('Raw arguments:', process.argv); // 用于代码压缩测试，压缩后将不会打印这些参数
 program.parse(); // 参数处理

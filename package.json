@@ -10,8 +10,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "bin:b": "tsc --project tsconfig.prod.json",
     "bin:s": "node ./dist/index.js -v",
-		"format:check": "prettier . --check",
-    "format:fix": "prettier . --write"
+    "format:check": "prettier . --check",
+    "format:fix": "prettier . --write",
+    "minify": "terser ./dist/index.js -o ./dist/output.min.js --config-file terser.config.json",
+    "minify:t": "node ./dist/output.min.js -v"
   },
   "repository": {
     "type": "git",
@@ -28,8 +30,10 @@
   },
   "homepage": "https://github.com/docs-site/tdoc-cli#readme",
   "devDependencies": {
+    "@types/node": "^24.0.3",
     "commander": "^14.0.0",
     "prettier": "^3.5.3",
+    "terser": "^5.43.0",
     "tsx": "^4.20.3"
   }
 }
