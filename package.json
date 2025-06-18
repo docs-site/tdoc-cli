@@ -13,7 +13,8 @@
     "format:check": "prettier . --check",
     "format:fix": "prettier . --write",
     "minify": "terser ./dist/index.js -o ./dist/output.min.js --config-file terser.config.json",
-    "minify:t": "node ./dist/output.min.js -v"
+    "minify:t": "node ./dist/output.min.js -v",
+		"eslint:fix": "eslint --fix -c eslint.config.mjs ./src/index.ts"
   },
   "repository": {
     "type": "git",
@@ -30,10 +31,14 @@
   },
   "homepage": "https://github.com/docs-site/tdoc-cli#readme",
   "devDependencies": {
+    "@eslint/js": "^9.29.0",
     "@types/node": "^24.0.3",
     "commander": "^14.0.0",
+    "eslint": "^9.29.0",
+    "globals": "^16.2.0",
     "prettier": "^3.5.3",
     "terser": "^5.43.0",
-    "tsx": "^4.20.3"
+    "tsx": "^4.20.3",
+    "typescript-eslint": "^8.34.1"
   }
 }
