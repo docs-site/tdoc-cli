@@ -12,6 +12,7 @@ import { Command } from 'commander';
 import pkg from '../package.json';
 import { createMarkdownFile } from './cmd/cmd_create_md';
 import { processImagePaths } from './cmd/cmd_img';
+import gitSubmoduleCommand from './cmd/cmd_git_submodule';
 
 /**
  * @brief 创建commander的Command实例
@@ -70,6 +71,19 @@ program
       await createMarkdownFile(filename, options);
     } catch (err) {
       console.error('❌ 创建文档失败:', (err as Error).message);
+      process.exit(1);
+    }
+  });
+
+// 添加处理git子模块的命令
+program
+  .command(gitSubmoduleCommand.command)
+  .description(gitSubmoduleCommand.description)
+  .action((dir) => {
+    try {
+      gitSubmoduleCommand.handler(dir);
+    } catch (err) {
+      console.error('❌ 处理子模块失败:', (err as Error).message);
       process.exit(1);
     }
   });
