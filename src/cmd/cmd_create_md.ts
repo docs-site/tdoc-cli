@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /** =====================================================
  * Copyright © hk. 2022-2025. All rights reserved.
  * File name  : cmd_create_md.ts
