@@ -13,6 +13,7 @@ import pkg from '../package.json';
 import { createMarkdownFile } from './cmd/cmd_create_md';
 import { processImagePaths } from './cmd/cmd_img';
 import gitSubmoduleCommand from './cmd/cmd_git_submodule';
+import treeCommand from './cmd/cmd_tree';
 
 /**
  * @brief 创建commander的Command实例
@@ -84,6 +85,20 @@ program
       gitSubmoduleCommand.handler(dir);
     } catch (err) {
       console.error('❌ 处理子模块失败:', (err as Error).message);
+      process.exit(1);
+    }
+  });
+
+// 添加显示目录树结构的命令
+program
+  .command('tree')
+  .description('显示当前目录的树状结构')
+  .option('-L, --depth <number>', '设置最大递归深度', parseInt)
+  .action((options) => {
+    try {
+      treeCommand.main(options);
+    } catch (err) {
+      console.error('❌ 显示目录树失败:', (err as Error).message);
       process.exit(1);
     }
   });
