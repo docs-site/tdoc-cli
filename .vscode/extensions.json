@@ -1,3 +1,4 @@
 {
   // "recommendations": ["extensions id"], // 打开vscode的时候会弹出的推荐扩展
+	"recommendations": ["EditorConfig.EditorConfig"]
 }
