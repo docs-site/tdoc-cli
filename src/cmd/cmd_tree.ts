@@ -18,6 +18,7 @@ interface TreeCounts {
 
 interface TreeOptions {
   depth?: number;
+  ignore?: string[] | string; // 可以是数组或逗号分隔的字符串
 }
 
 /**
@@ -33,19 +34,24 @@ function generateTree(
   dirPath: string,
   prefix: string = '',
   maxDepth: number = Infinity,
-  currentDepth: number = 0
+  currentDepth: number = 0,
+  ignoreDirs: string[] = []
 ): TreeCounts {
   // 同步读取目录内容
   const files = fs.readdirSync(dirPath);
-  const count = files.length;
   let dirCount = 0;
   let fileCount = 0;
 
   // 遍历目录中的每个文件/子目录
-  files.forEach((file, index) => {
+  for (let index = 0; index < files.length; index++) {
+    const file = files[index];
     const fullPath = path.join(dirPath, file);
     const stats = fs.statSync(fullPath); // 获取文件状态信息
-    const isCurrentLast = index === count - 1; // 是否是当前目录的最后一项
+    // 跳过忽略的目录
+    if (stats.isDirectory() && ignoreDirs.includes(file)) {
+      continue;
+    }
+    const isCurrentLast = index === files.length - 1; // 是否是当前目录的最后一项
 
     // 构建当前项的连接线
     let line = prefix; // 继承父级前缀
@@ -73,7 +79,7 @@ function generateTree(
     } else {
       fileCount++;
     }
-  });
+  }
 
   return { dirCount, fileCount };
 }
@@ -89,7 +95,18 @@ function main(options: TreeOptions = {}): void {
   try {
     const currentDir = process.cwd();
     console.log(path.basename(currentDir));
-    const counts = generateTree(currentDir, '', options.depth || Infinity);
+    // 处理 ignore 参数，支持字符串和数组格式
+    const ignoreDirs =
+      typeof options.ignore === 'string'
+        ? options.ignore.split(',').map((s) => s.trim())
+        : options.ignore || [];
+    const counts = generateTree(
+      currentDir,
+      '',
+      options.depth || Infinity,
+      0,
+      ignoreDirs
+    );
     console.log(`\n${counts.dirCount} directories, ${counts.fileCount} files`);
     process.exit(0); // 确保程序正常退出
   } catch (err) {

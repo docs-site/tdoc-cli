@@ -93,7 +93,8 @@ program
 program
   .command('tree')
   .description('显示当前目录的树状结构')
-  .option('-L, --depth <number>', '设置最大递归深度', parseInt)
+  .option('-d, --depth <number>', '设置最大递归深度', parseInt)
+  .option('-i, --ignore <dirs>', '要忽略的目录列表(逗号分隔)', String)
   .action((options) => {
     try {
       treeCommand.main(options);
