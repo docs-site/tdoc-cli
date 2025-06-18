@@ -11,6 +11,7 @@
 import { Command } from 'commander';
 import pkg from '../package.json';
 import { createMarkdownFile } from './cmd/cmd_create_md';
+import { processImagePaths } from './cmd/cmd_img';
 
 /**
  * @brief 创建commander的Command实例
@@ -42,6 +43,19 @@ function getVersionInfo(): string {
 }
 
 program.version(getVersionInfo(), '-v, --version', '显示版本信息和依赖包');
+
+// 添加处理图片路径的命令
+program
+  .command('img <filepath>')
+  .description('处理markdown文件中的图片路径')
+  .action(async (filepath) => {
+    try {
+      await processImagePaths(filepath);
+    } catch (err) {
+      console.error('❌ 处理图片路径失败:', (err as Error).message);
+      process.exit(1);
+    }
+  });
 
 // 添加创建markdown文件的命令
 program
