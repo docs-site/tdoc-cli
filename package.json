@@ -9,12 +9,13 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "bin:b": "tsc --project tsconfig.prod.json",
-    "bin:s": "node ./dist/index.js -v",
+    "bin:v": "node ./dist/index.js -v",
+    "bin:n": "node ./dist/index.js n demo -f",
     "format:check": "prettier . --check",
     "format:fix": "prettier . --write",
     "minify": "terser ./dist/index.js -o ./dist/output.min.js --config-file terser.config.json",
     "minify:t": "node ./dist/output.min.js -v",
-    "eslint:fix": "eslint --fix -c eslint.config.mjs ./src/index.ts"
+    "eslint:fix": "eslint --fix -c eslint.config.mjs src"
   },
   "repository": {
     "type": "git",

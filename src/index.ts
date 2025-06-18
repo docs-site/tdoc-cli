@@ -10,6 +10,7 @@
 
 import { Command } from 'commander';
 import pkg from '../package.json';
+import { createMarkdownFile } from './cmd/cmd_create_md';
 
 /**
  * @brief 创建commander的Command实例
@@ -41,6 +42,23 @@ function getVersionInfo(): string {
 }
 
 program.version(getVersionInfo(), '-v, --version', '显示版本信息和依赖包');
+
+// 添加创建markdown文件的命令
+program
+  .command('new <filename>')
+  .alias('n')
+  .description('创建新的markdown文档')
+  .option('-t, --template <name>', '指定模板名称', 'post')
+  .option('-f, --force', '强制覆盖已存在的文件')
+  .option('-d, --dir <directory>', '指定输出目录')
+  .action(async (filename, options) => {
+    try {
+      await createMarkdownFile(filename, options);
+    } catch (err) {
+      console.error('❌ 创建文档失败:', (err as Error).message);
+      process.exit(1);
+    }
+  });
 
 console.log('Raw arguments:', process.argv); // 用于代码压缩测试，压缩后将不会打印这些参数
 program.parse(); // 参数处理

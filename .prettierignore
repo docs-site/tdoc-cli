@@ -9,6 +9,7 @@ LICENSE
 README.md
 bin
 dist
+scaffolds
 # For development
 .gitignore
 .prettierignore
@@ -20,3 +21,5 @@ package-lock.json
 
 tsconfig.json
 tsconfig.prod.json
+
+eslint.config.mjs
