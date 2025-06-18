@@ -14,7 +14,7 @@
     "format:fix": "prettier . --write",
     "minify": "terser ./dist/index.js -o ./dist/output.min.js --config-file terser.config.json",
     "minify:t": "node ./dist/output.min.js -v",
-		"eslint:fix": "eslint --fix -c eslint.config.mjs ./src/index.ts"
+    "eslint:fix": "eslint --fix -c eslint.config.mjs ./src/index.ts"
   },
   "repository": {
     "type": "git",
@@ -35,6 +35,8 @@
     "@types/node": "^24.0.3",
     "commander": "^14.0.0",
     "eslint": "^9.29.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-prettier": "^5.5.0",
     "globals": "^16.2.0",
     "prettier": "^3.5.3",
     "terser": "^5.43.0",
