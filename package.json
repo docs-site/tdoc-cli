@@ -9,6 +9,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "bin:b": "tsc --project tsconfig.prod.json",
+		"bin:c": "rimraf dist",
     "bin:v": "node ./dist/index.js -v",
     "bin:n": "node ./dist/index.js n demo -f",
     "format:check": "prettier . --check",
@@ -40,6 +41,7 @@
     "eslint-plugin-prettier": "^5.5.0",
     "globals": "^16.2.0",
     "prettier": "^3.5.3",
+    "rimraf": "^6.0.1",
     "terser": "^5.43.0",
     "tsx": "^4.20.3",
     "typescript-eslint": "^8.34.1"
