@@ -98,7 +98,7 @@ async function createMarkdownFile(
 ): Promise<void> {
   // 1. 确定模板路径
   const templatePath = path.join(
-    process.cwd(),
+    path.join(__dirname, '../../'),
     'scaffolds',
     `${options.template || 'post'}.md`
   );
