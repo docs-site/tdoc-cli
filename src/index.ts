@@ -14,6 +14,7 @@ import { createMarkdownFile } from './cmd/cmd_create_md';
 import { processImagePaths } from './cmd/cmd_img';
 import gitSubmoduleCommand from './cmd/cmd_git_submodule';
 import treeCommand from './cmd/cmd_tree';
+import loginCommand from './inquirer-cmd/login';
 
 /**
  * @brief 创建commander的Command实例
@@ -104,5 +105,12 @@ program
     }
   });
 
+// 登录命令
+program
+  .command('login')
+  .description('用户登录')
+  .action(async () => {
+    await loginCommand();
+  });
 console.log('Raw arguments:', process.argv); // 用于代码压缩测试，压缩后将不会打印这些参数
 program.parse(); // 参数处理

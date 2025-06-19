@@ -9,9 +9,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "bin:b": "tsc --project tsconfig.prod.json",
-		"bin:c": "rimraf dist",
+    "bin:c": "rimraf dist",
     "bin:v": "node ./dist/index.js -v",
     "bin:n": "node ./dist/index.js n demo -f",
+    "bin:login": "node ./dist/index.js login",
     "format:check": "prettier . --check",
     "format:fix": "prettier . --write",
     "minify": "terser ./dist/index.js -o ./dist/output.min.js --config-file terser.config.json",
@@ -45,5 +46,8 @@
     "terser": "^5.43.0",
     "tsx": "^4.20.3",
     "typescript-eslint": "^8.34.1"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^7.5.3"
   }
 }
