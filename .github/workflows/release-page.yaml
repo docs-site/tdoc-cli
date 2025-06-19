@@ -15,7 +15,11 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    
+    # 只有当上游工作流包含发布动作时才运行
+    if: |
+      github.event_name == 'workflow_dispatch' || 
+      (github.event.workflow_run.conclusion == 'success' && 
+       contains(github.event.workflow_run.head_commit.message, '[publish]'))
     steps:
       # 步骤 1: 检出代码库
       - name: Checkout repository
