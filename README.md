@@ -1,6 +1,6 @@
 ## <font size=3>一、tdoc-cli</font>
 
-苏木的第一个node应用程序！！！
+sumu's document processing cli tool. This is a TypeScript project.
 
 ### <font size=3>1. 开发环境</font>
 
