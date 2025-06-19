@@ -112,5 +112,5 @@ program
   .action(async () => {
     await loginCommand();
   });
-console.log('Raw arguments:', process.argv); // 用于代码压缩测试，压缩后将不会打印这些参数
+// console.log('Raw arguments:', process.argv); // 用于代码压缩测试，压缩后将不会打印这些参数
 program.parse(); // 参数处理
