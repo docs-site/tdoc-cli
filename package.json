@@ -1,6 +1,6 @@
 {
   "name": "@docs-site/tdoc-cli",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "sumu's document processing cli tool. This is a TypeScript project.",
   "main": "src/index.ts",
   "bin": {

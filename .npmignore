@@ -1,0 +1,9 @@
+.github
+node_modules
+
+.editorconfig
+.prettierignore
+.prettierrc
+terser.config.json
+tsconfig.json
+tsconfig.prod.json
