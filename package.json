@@ -1,6 +1,6 @@
 {
   "name": "@docs-site/tdoc-cli",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "sumu's document processing cli tool. This is a TypeScript project.",
   "main": "src/index.ts",
   "bin": {
@@ -35,8 +35,6 @@
   "homepage": "https://github.com/docs-site/tdoc-cli#readme",
   "devDependencies": {
     "@eslint/js": "^9.29.0",
-    "@types/node": "^24.0.3",
-    "commander": "^14.0.0",
     "eslint": "^9.29.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-prettier": "^5.5.0",
@@ -48,6 +46,8 @@
     "typescript-eslint": "^8.34.1"
   },
   "dependencies": {
-    "@inquirer/prompts": "^7.5.3"
+    "@inquirer/prompts": "^7.5.3",
+    "@types/node": "^24.0.3",
+    "commander": "^14.0.0"
   }
 }
