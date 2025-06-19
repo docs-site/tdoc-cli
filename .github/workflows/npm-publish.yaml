@@ -1,0 +1,55 @@
+# .github/workflows/npm-publish.yml
+
+name: Publish Package to npmjs
+
+on:
+  push:
+    branches:
+      - master  # 仅在main分支上推送时触发
+    tags:
+      - 'v*'
+  # 允许从 Actions 选项卡手动运行此工作流程
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # 允许工作流修改仓库内容（如创建tag）
+      id-token: write  # 允许工作流获取OIDC令牌用于npm发布认证
+    # 仅当提交信息包含[publish]时触发
+    if: contains(github.event.head_commit.message, '[publish]')
+    steps:
+      - name: Checkout      # 检出仓库代码到工作目录
+        uses: actions/checkout@v4
+        with:
+          # 添加这行以获取写权限
+          persist-credentials: true
+          fetch-depth: 0
+      
+      - name: 打印相关路径
+        run: | # | 为 yaml 的特定符号，其下可以使用多行文字。
+          echo "当前路径为 $(pwd)"
+          echo "工作路径为 ${{ github.workspace }}"
+          echo "HOME路径为 $HOME"
+
+      - name: Setup Node.js  # 设置Node.js环境和npm registry
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          registry-url: 'https://registry.npmjs.org'
+          
+      - name: Update npm     # 更新npm到最新版本
+        run: npm install -g npm
+      # npm ci命令类似于 npm install 但它旨在用于自动化环境，如测试平台，持续集成和部署
+      # 可以帮助捕获由大多数 npm 用户的增量安装的本地环境引起的错误或不一致
+      - name: Install dependencies  # 使用package-lock.json精确安装依赖
+        run: npm ci
+        
+      - name: Build package  # 编译打包生产环境代码
+        run: npm run bin:b
+
+      - name: publish package  # 发布包到npmjs
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN_NPM }}  # 使用NPM_TOKEN环境变量进行身份验证
