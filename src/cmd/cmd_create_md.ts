@@ -25,15 +25,6 @@ interface CommandOptions {
 }
 
 /**
- * @brief 创建readline接口用于用户交互
- * @description 初始化标准输入输出接口用于命令行交互
- */
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
-
-/**
  * @brief 读取模板文件内容
  * @param {string} templatePath - 模板文件路径
  * @return {string} 模板文件内容
@@ -69,11 +60,20 @@ function generateContent(template: string, name: string): string {
  * @async
  */
 async function confirmOverwrite(filePath: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    rl.question(`⚠️  文件已存在: ${filePath} 是否覆盖? (y/N) `, (answer) => {
-      resolve(answer.trim().toLowerCase() === 'y');
-    });
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
   });
+
+  try {
+    return await new Promise((resolve) => {
+      rl.question(`⚠️  文件已存在: ${filePath} 是否覆盖? (y/N) `, (answer) => {
+        resolve(answer.trim().toLowerCase() === 'y');
+      });
+    });
+  } finally {
+    rl.close();
+  }
 }
 
 /**
@@ -139,8 +139,6 @@ async function createMarkdownFile(
   } catch (err) {
     console.error(`❌ ${(err as Error).message}`);
     process.exit(1);
-  } finally {
-    rl.close();
   }
 }
 

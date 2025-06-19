@@ -29,9 +29,11 @@ export default async function loginCommand() {
 
     console.log('\n登录信息验证中...');
     // 实际开发中这里替换为真实的登录API调用
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // 模拟网络延迟
+    await new Promise((resolve) => setTimeout(resolve, 200)); // 模拟网络延迟
 
-    console.log(`\n✅ 登录成功！欢迎回来，${username}`);
+    console.log(
+      `\n✅ 登录成功！欢迎回来，${username} (密码长度: ${'*'.repeat(userPassword.length)})`
+    );
     // 返回用户信息（模拟）
     return { username, token: '模拟令牌' };
   } catch (error) {
