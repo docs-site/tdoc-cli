@@ -2,7 +2,7 @@ name: Release Page Creator
 
 on:
   workflow_run:
-    workflows: ["Publish Package to npmjs"]
+    workflows: ['Publish Package to npmjs']
     types: [completed]
   workflow_dispatch:
     inputs:
@@ -44,7 +44,7 @@ jobs:
           BEIJING_TIME=$(date +"%Y-%m-%dT%H:%M:%S%z")
           # 调整格式为 YYYY-MM-DDTHH:MM:SS+0800
           BEIJING_TIME=${BEIJING_TIME:0:22}+0800
-          
+
           echo "北京时间为: $BEIJING_TIME"
           echo "release_date=$BEIJING_TIME" >> $GITHUB_OUTPUT
 
@@ -86,13 +86,13 @@ jobs:
             echo "::错误::版本不匹配! Git标签(${{ steps.resolve_tag.outputs.tag_name }}) ≠ package.json版本(v$VERSION)"
             exit 1
           fi
-          
+
           if [[ "${{ steps.resolve_tag.outputs.tag_name }}" == v* ]]; then
             TAG_FORMAT="✅ 有效"
           else
             TAG_FORMAT="⚠️ 无效"
           fi
-          
+
           echo "标签格式: $TAG_FORMAT"
           echo "tag_format=$TAG_FORMAT" >> $GITHUB_OUTPUT
           echo "✅ 验证通过!"
@@ -105,23 +105,23 @@ jobs:
           name: 发布 ${{ steps.resolve_tag.outputs.tag_name }}
           body: |
             ## 版本 ${{ steps.resolve_tag.outputs.tag_name }}
-            
+
             ### 验证摘要
             | 检查项 | 结果 |
             |-------|--------|
             | Git标签 vs package.json | ✅ **匹配** |
             | Git标签格式 | ${{ steps.validate_tag.outputs.tag_format }} |
-            
+
             ### 详细信息
             - **包版本:** ${{ steps.package_version.outputs.package_tag }}
             - **发布日期:** ${{ steps.beijing_time.outputs.release_date }} (北京时间)
-            
+
             **触发来源:**  
             ${{ github.event_name }} (工作流运行: #${{ github.run_number }})
-            
+
             **提交信息:**  
             > ${{ github.event.workflow_run.head_commit.message || '无提交信息可用' }}
-            
+
             **自动生成说明:**  
             此版本基于已验证的Git标签自动生成。
           files: |

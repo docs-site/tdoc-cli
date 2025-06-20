@@ -11,7 +11,7 @@
 import { Command } from 'commander';
 import pkg from '../package.json';
 import { createMarkdownFile } from './cmd/cmd_create_md';
-import { processImagePaths } from './cmd/cmd_img';
+import { main as processImages } from './cmd/cmd_img';
 import gitSubmoduleCommand from './cmd/cmd_git_submodule';
 import treeCommand from './cmd/cmd_tree';
 import loginCommand from './inquirer-cmd/login';
@@ -38,7 +38,7 @@ const program = new Command(pkg.name);
  *          dependencies:
  *            react: ^18.0.0
  *            react-dom: ^18.0.0
- *            
+ *
  *          devDependencies:
  *            typescript: ^4.0.0
  *            eslint: ^7.0.0
@@ -57,11 +57,17 @@ program.version(getVersionInfo(), '-v, --version', '显示版本信息和依赖�
 
 // 添加处理图片路径的命令
 program
-  .command('img <filepath>')
+  .command('img [path]')
   .description('处理markdown文件中的图片路径')
-  .action(async (filepath) => {
+  .option('-d, --dir', '处理目录中git修改/新增的markdown文件')
+  .action(async (path, options) => {
     try {
-      await processImagePaths(filepath);
+      const args = [];
+      if (options.dir) {
+        args.push('-d');
+      }
+      args.push(path);
+      await processImages(args);
     } catch (err) {
       console.error('❌ 处理图片路径失败:', (err as Error).message);
       process.exit(1);

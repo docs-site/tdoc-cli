@@ -5,10 +5,15 @@
  * Date       : 2025-06-18
  * Version    :
  * Description: 处理markdown文件中的图片路径
+ * 支持两种模式:
+ * 1. 单文件模式: tdoc img xxx.md
+ * 2. 目录模式: tdoc img -d xxx (处理git修改/新增的.md文件)
  * ======================================================
  */
 import fs from 'fs';
 import readline from 'readline';
+import path from 'path';
+import simpleGit from 'simple-git';
 
 /**
  * @brief 处理markdown文件中的图片路径
@@ -85,7 +90,6 @@ async function processImagePaths(filePath: string): Promise<void> {
             // 打印成功信息
             console.log(`✅ 图片路径处理完成: ${filePath}`);
             resolve(); // 成功时解决Promise
-            process.exit(0); // 处理完成后退出程序
           }
         }
       );
@@ -98,4 +102,79 @@ async function processImagePaths(filePath: string): Promise<void> {
   });
 }
 
-export { processImagePaths };
+/**
+ * @brief 处理目录中git修改/新增的markdown文件
+ * @param {string} dirPath 目录路径
+ * @return {Promise<void>} 无返回值
+ */
+async function processDirectory(dirPath: string): Promise<void> {
+  const git = simpleGit(dirPath);
+
+  try {
+    // 获取当前目录相对于git根目录的路径
+    const rootPath = await git.revparse(['--show-toplevel']);
+    const relativePath = path.relative(rootPath.trim(), dirPath);
+
+    // 获取git状态信息（仅包含当前目录下的文件）
+    const status = await git.status();
+
+    // 合并修改和未跟踪的文件，并过滤出当前目录下的.md文件
+    const mdFiles = [...status.modified, ...status.not_added, ...status.created]
+      .filter((file) => {
+        // 只处理当前目录下的.md文件
+        const filePath = path.normalize(file);
+        const inTargetDir =
+          relativePath === '.'
+            ? !filePath.includes(path.sep)
+            : filePath.startsWith(relativePath + path.sep) &&
+              filePath.split(path.sep).length ===
+                relativePath.split(path.sep).length + 1;
+
+        return (
+          file.endsWith('.md') &&
+          inTargetDir &&
+          fs.existsSync(path.join(dirPath, path.basename(file)))
+        );
+      })
+      .map((file) => path.basename(file));
+
+    // 打印将要处理的文件列表
+    console.log('📋 将要处理的文件:');
+    mdFiles.forEach((file) => console.log(`  - ${file}`));
+
+    // 处理每个.md文件
+    for (const file of mdFiles) {
+      const fullPath = path.join(dirPath, file);
+      console.log(`🔄 正在处理: ${file}`);
+      await processImagePaths(fullPath);
+    }
+
+    console.log(`✅ 目录处理完成，共处理 ${mdFiles.length} 个文件: ${dirPath}`);
+    process.exit(0);
+  } catch (err) {
+    console.error(`❌ 目录处理失败: ${err}`);
+    process.exit(1);
+  }
+}
+
+/**
+ * @brief 根据参数选择处理模式
+ * @param {string[]} args 命令行参数
+ */
+async function main(args: string[]): Promise<void> {
+  if (args.length === 0) {
+    console.error('❌ 请提供文件路径或目录路径');
+    process.exit(1);
+  }
+
+  if (args[0] === '-d' && args[1]) {
+    await processDirectory(args[1]);
+  } else if (args[0].endsWith('.md')) {
+    await processImagePaths(args[0]);
+  } else {
+    console.error('❌ 无效参数');
+    process.exit(1);
+  }
+}
+
+export { processImagePaths, processDirectory, main };
