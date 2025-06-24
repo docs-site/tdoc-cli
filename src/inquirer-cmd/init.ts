@@ -3,8 +3,8 @@ import fs from 'fs-extra';
 import path from 'path';
 import { execSync } from 'child_process';
 
-const devDependencies: string[] = ['@types/node'];
-const dependencies: string[] = [];
+let devDependencies: string[] = ['@types/node'];
+let dependencies: string[] = [];
 
 export async function cmdInit(dirName?: string) {
   console.log('Welcome to tdoc project initialization\n');
@@ -21,7 +21,18 @@ export async function cmdInit(dirName?: string) {
     fs.mkdirSync(projectDir, { recursive: true });
   }
 
-  const answers = {
+  const answers: {
+    name: string;
+    description: string;
+    author: string;
+    license: string;
+    initGit: boolean;
+    addWorkflow: boolean;
+    addEditorConfig: boolean;
+    addVscodeConfig: boolean;
+    addPrettierConfig: boolean;
+    installDeps: boolean;
+  } = {
     name: await input({
       message: 'Project name:',
       default: dirName ? path.basename(dirName) : undefined,
@@ -62,10 +73,21 @@ export async function cmdInit(dirName?: string) {
       message: 'Add .vscode project configuration?',
       default: true,
     }),
+    addPrettierConfig: await confirm({
+      message: 'Add Prettier configuration (will install prettier package)?',
+      default: true,
+    }),
     installDeps: await (async () => {
-      console.log(`\nWill install the following common dependencies:\n  devDependencies: ${devDependencies.join(', ')}\n  dependencies: ${dependencies.join(', ') || 'none'}\n`);
+      // Initialize dependencies array
+      const showDevDeps = [...devDependencies];
+      const showDeps = [...dependencies];
+      
+      console.log('\nWill install the following basic common dependencies:');
+      console.log(`  devDependencies: ${showDevDeps.join(', ')}`);
+      console.log(`  dependencies: ${showDeps.join(', ') || 'none'}`);
+      console.log();
       return await confirm({
-        message: '是否安装这些依赖?',
+        message: '是否自动安装依赖?',
         default: false,
       });
     })(),
@@ -82,6 +104,10 @@ export async function cmdInit(dirName?: string) {
     main: 'index.js',
     scripts: {
       test: 'echo "Error: no test specified" && exit 1',
+      ...(answers.addPrettierConfig ? {
+        'format:check': 'prettier . --check',
+        'format:fix': 'prettier . --write'
+      } : {})
     },
     author: answers.author,
     license: answers.license,
@@ -143,17 +169,41 @@ export async function cmdInit(dirName?: string) {
     }
   }
 
+  // Copy Prettier config files if selected
+  if (answers.addPrettierConfig) {
+    const prettierRcPath = path.join(__dirname, '../../.prettierrc');
+    const prettierIgnorePath = path.join(__dirname, '../../.prettierignore');
+    
+    if (fs.existsSync(prettierRcPath)) {
+      fs.copyFileSync(prettierRcPath, path.join(projectDir, '.prettierrc'));
+      console.log('✅ .prettierrc copied');
+    }
+    if (fs.existsSync(prettierIgnorePath)) {
+      fs.copyFileSync(prettierIgnorePath, path.join(projectDir, '.prettierignore'));
+      console.log('✅ .prettierignore copied');
+    }
+  }
+
   // Install dependencies if selected (now at the end)
   if (answers.installDeps) {
     try {
       console.log('Installing dependencies...');
-      if (devDependencies.length) {
-        execSync(`npm install ${devDependencies.join(' ')} -D`, { 
+      const installDevDeps = [...devDependencies];
+      const installDeps = [...dependencies];
+      
+      if (answers.addPrettierConfig) {
+        installDevDeps.push('prettier');
+      }
+
+      if (installDevDeps.length) {
+        console.log(`  devDependencies: ${installDevDeps.join(', ')}`);
+        execSync(`npm install ${installDevDeps.join(' ')} -D`, { 
           stdio: 'inherit' 
         });
       }
-      if (dependencies.length) {
-        execSync(`npm install ${dependencies.join(' ')}`, { 
+      if (installDeps.length) {
+        console.log(`  dependencies: ${installDeps.join(', ')}`);
+        execSync(`npm install ${installDeps.join(' ')}`, { 
           stdio: 'inherit' 
         });
       }
