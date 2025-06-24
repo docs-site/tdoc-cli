@@ -6,7 +6,7 @@ import { execSync } from 'child_process';
 let devDependencies: string[] = ['@types/node'];
 let dependencies: string[] = [];
 
-export async function cmdInit(dirName?: string, skipPrompts = false, yes = false) {
+export async function cmdInit(dirName?: string, skipPrompts = false, yes = false, scope?: string) {
   console.log('Welcome to tdoc project initialization\n');
 
   // Handle directory path and check
@@ -98,7 +98,7 @@ export async function cmdInit(dirName?: string, skipPrompts = false, yes = false
 
   // Create package.json
   const packageJson = {
-    name: answers.name.toLowerCase().replace(/\s+/g, '-'),
+    name: scope ? `@${scope}/${answers.name.toLowerCase().replace(/\s+/g, '-')}` : answers.name.toLowerCase().replace(/\s+/g, '-'),
     version: '1.0.0',
     description: answers.description,
     main: 'index.js',

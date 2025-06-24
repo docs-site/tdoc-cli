@@ -133,9 +133,10 @@ program
   .command('init [dirName]')
   .description('Initialize a new tdoc project')
   .option('-y, --yes', 'Skip prompts and use default values')
+  .option('--scope <scope>', 'Set npm package scope (e.g. myorg)')
   .action(async (dirName, options) => {
     try {
-      await cmdInit(dirName, false, options.yes);
+      await cmdInit(dirName, false, options.yes, options.scope);
     } catch (err) {
       console.error('❌ 初始化项目失败:', (err as Error).message);
       process.exit(1);
