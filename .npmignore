@@ -1,9 +1,12 @@
-.github
+
 node_modules
 
-.editorconfig
-.prettierignore
-.prettierrc
+# init 命令可能会用到这些文件，先一起发布
+# .editorconfig
+# .prettierignore
+# .prettierrc
+# .github
+
 terser.config.json
 tsconfig.json
 tsconfig.prod.json
