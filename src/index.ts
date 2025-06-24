@@ -15,6 +15,7 @@ import { main as processImages } from './cmd/cmd_img';
 import gitSubmoduleCommand from './cmd/cmd_git_submodule';
 import treeCommand from './cmd/cmd_tree';
 import loginCommand from './inquirer-cmd/login';
+import { cmdInit } from './inquirer-cmd/init';
 
 /**
  * @brief 创建commander的Command实例
@@ -126,5 +127,18 @@ program
   .action(async () => {
     await loginCommand();
   });
+// 初始化项目命令
+program
+  .command('init [dirName]')
+  .description('Initialize a new tdoc project')
+  .action(async (dirName) => {
+    try {
+      await cmdInit(dirName);
+    } catch (err) {
+      console.error('❌ 初始化项目失败:', (err as Error).message);
+      process.exit(1);
+    }
+  });
+
 // console.log('Raw arguments:', process.argv); // 用于代码压缩测试，压缩后将不会打印这些参数
 program.parse(); // 参数处理
