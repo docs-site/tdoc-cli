@@ -54,6 +54,14 @@ export async function cmdInit(dirName?: string) {
       message: 'Add GitHub Actions workflow for auto-publish?',
       default: true,
     }),
+    addEditorConfig: await confirm({
+      message: 'Add .editorconfig configuration file?',
+      default: true,
+    }),
+    addVscodeConfig: await confirm({
+      message: 'Add .vscode project configuration?',
+      default: true,
+    }),
     installDeps: await (async () => {
       console.log(`\nWill install the following common dependencies:\n  devDependencies: ${devDependencies.join(', ')}\n  dependencies: ${dependencies.join(', ') || 'none'}\n`);
       return await confirm({
@@ -89,6 +97,24 @@ export async function cmdInit(dirName?: string) {
     path.join(projectDir, 'README.md'),
     `# ${answers.name}\n\n${answers.description || 'Project description'}`
   );
+
+  // Copy .editorconfig if selected
+  if (answers.addEditorConfig) {
+    const editorConfigPath = path.join(__dirname, '../../.editorconfig');
+    if (fs.existsSync(editorConfigPath)) {
+      fs.copyFileSync(editorConfigPath, path.join(projectDir, '.editorconfig'));
+      console.log('✅ .editorconfig copied');
+    }
+  }
+
+  // Copy .vscode directory if selected
+  if (answers.addVscodeConfig) {
+    const vscodePath = path.join(__dirname, '../../.vscode');
+    if (fs.existsSync(vscodePath)) {
+      fs.copySync(vscodePath, path.join(projectDir, '.vscode'));
+      console.log('✅ .vscode configuration copied');
+    }
+  }
 
   // Initialize git if selected
   if (answers.initGit) {
@@ -136,6 +162,6 @@ export async function cmdInit(dirName?: string) {
     }
   }
 
-  console.log(`\nProject ${answers.name} initialized successfully!`);
+  console.log(`\n✅ Project ${answers.name} initialized successfully!`);
   console.log(`cd ${answers.name} to get started.`);
 }
