@@ -127,13 +127,15 @@ program
   .action(async () => {
     await loginCommand();
   });
+
 // 初始化项目命令
 program
   .command('init [dirName]')
   .description('Initialize a new tdoc project')
-  .action(async (dirName) => {
+  .option('-y, --yes', 'Skip prompts and use default values')
+  .action(async (dirName, options) => {
     try {
-      await cmdInit(dirName);
+      await cmdInit(dirName, false, options.yes);
     } catch (err) {
       console.error('❌ 初始化项目失败:', (err as Error).message);
       process.exit(1);

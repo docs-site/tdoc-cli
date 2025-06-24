@@ -6,7 +6,7 @@ import { execSync } from 'child_process';
 let devDependencies: string[] = ['@types/node'];
 let dependencies: string[] = [];
 
-export async function cmdInit(dirName?: string) {
+export async function cmdInit(dirName?: string, skipPrompts = false, yes = false) {
   console.log('Welcome to tdoc project initialization\n');
 
   // Handle directory path and check
@@ -33,20 +33,20 @@ export async function cmdInit(dirName?: string) {
     addPrettierConfig: boolean;
     installDeps: boolean;
   } = {
-    name: await input({
+    name: yes ? (dirName ? path.basename(dirName) : 'my-project') : await input({
       message: 'Project name:',
       default: dirName ? path.basename(dirName) : undefined,
       validate: (input: string) => input.trim() !== '' || 'Project name is required',
     }),
-    description: await input({
+    description: yes ? '' : await input({
       message: 'Project description:',
       default: '',
     }),
-    author: await input({
+    author: yes ? '' : await input({
       message: 'Author:',
       default: '',
     }),
-    license: await select({
+    license: yes ? 'MIT' : await select({
       message: 'License:',
       choices: [
         { value: 'MIT' },
@@ -57,27 +57,27 @@ export async function cmdInit(dirName?: string) {
       ],
       default: 'MIT',
     }),
-    initGit: await confirm({
+    initGit: yes ? true : await confirm({
       message: 'Initialize git repository?',
       default: true,
     }),
-    addWorkflow: await confirm({
+    addWorkflow: yes ? true : await confirm({
       message: 'Add GitHub Actions workflow for auto-publish?',
       default: true,
     }),
-    addEditorConfig: await confirm({
+    addEditorConfig: yes ? true : await confirm({
       message: 'Add .editorconfig configuration file?',
       default: true,
     }),
-    addVscodeConfig: await confirm({
+    addVscodeConfig: yes ? true : await confirm({
       message: 'Add .vscode project configuration?',
       default: true,
     }),
-    addPrettierConfig: await confirm({
+    addPrettierConfig: yes ? true : await confirm({
       message: 'Add Prettier configuration (will install prettier package)?',
       default: true,
     }),
-    installDeps: await (async () => {
+    installDeps: yes ? false : await (async () => {
       // Initialize dependencies array
       const showDevDeps = [...devDependencies];
       const showDeps = [...dependencies];
