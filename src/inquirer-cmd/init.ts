@@ -118,11 +118,22 @@ export async function cmdInit(dirName?: string) {
     JSON.stringify(packageJson, null, 2)
   );
 
-  // Create basic files
-  fs.writeFileSync(
-    path.join(projectDir, 'README.md'),
-    `# ${answers.name}\n\n${answers.description || 'Project description'}`
-  );
+  // Create README from template
+  const readmeTemplatePath = path.join(__dirname, '../../npm-template/README.md');
+  if (fs.existsSync(readmeTemplatePath)) {
+    let readmeContent = fs.readFileSync(readmeTemplatePath, 'utf8');
+    readmeContent = readmeContent.replace(/\{\{\s*title\s*\}\}/g, answers.name);
+    fs.writeFileSync(
+      path.join(projectDir, 'README.md'),
+      readmeContent
+    );
+  } else {
+    // Fallback to basic README
+    fs.writeFileSync(
+      path.join(projectDir, 'README.md'),
+      `# ${answers.name}\n\n${answers.description || 'Project description'}`
+    );
+  }
 
   // Copy .editorconfig if selected
   if (answers.addEditorConfig) {
