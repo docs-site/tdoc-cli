@@ -20,7 +20,7 @@ import simpleGit from 'simple-git';
  * @param {string} filePath markdown文件路径
  * @return {Promise<void>} 无返回值
  */
-async function processImagePaths(filePath: string): Promise<void> {
+async function processImagePaths(filePath: string, debugMode = false): Promise<void> {
   // 创建并返回Promise来处理异步文件操作
   return new Promise((resolve, reject) => {
     // 创建readline接口来逐行读取文件
@@ -35,6 +35,9 @@ async function processImagePaths(filePath: string): Promise<void> {
     // 存储处理后的行内容
     const outputLines: string[] = [];
 
+    let totalImages = 0;
+    let processedImages = 0;
+    
     // 处理每行内容的回调函数
     rl.on('line', (line: string) => {
       /**
@@ -48,8 +51,14 @@ async function processImagePaths(filePath: string): Promise<void> {
         /!\[.*?\]\((?!http)([^)]+)\)/g,
         (match: string, p1: string) => {
           if (!p1.startsWith('./') && !p1.startsWith('http')) {
+            totalImages++;
+            processedImages++;
+            if (debugMode) {
+              console.log(`🖼️  图片路径优化: ${p1} → ./${p1}`);
+            }
             return match.replace(p1, `./${p1}`); // 添加'./'前缀
           }
+          totalImages++;
           return match; // 如果已有前缀或是http路径则保持不变
         }
       );
@@ -89,6 +98,9 @@ async function processImagePaths(filePath: string): Promise<void> {
           } else {
             // 打印成功信息
             console.log(`✅ 图片路径处理完成: ${filePath}`);
+            if (debugMode) {
+              console.log(`📊 共检测到 ${totalImages} 个图片链接，优化了 ${processedImages} 个相对路径`);
+            }
             resolve(); // 成功时解决Promise
           }
         }
@@ -107,7 +119,7 @@ async function processImagePaths(filePath: string): Promise<void> {
  * @param {string} dirPath 目录路径
  * @return {Promise<void>} 无返回值
  */
-async function processDirectory(dirPath: string): Promise<void> {
+async function processDirectory(dirPath: string, debugMode = false): Promise<void> {
   const git = simpleGit(dirPath);
 
   try {
@@ -146,10 +158,11 @@ async function processDirectory(dirPath: string): Promise<void> {
     for (const file of mdFiles) {
       const fullPath = path.join(dirPath, file);
       console.log(`🔄 正在处理: ${file}`);
-      await processImagePaths(fullPath);
+      await processImagePaths(fullPath, debugMode);
+      console.log(" ");
     }
 
-    console.log(`✅ 目录处理完成，共处理 ${mdFiles.length} 个文件: ${dirPath}`);
+    console.log(`📊 目录处理完成，共处理 ${mdFiles.length} 个文件: ${dirPath}`);
     process.exit(0);
   } catch (err) {
     console.error(`❌ 目录处理失败: ${err}`);
@@ -167,10 +180,17 @@ async function main(args: string[]): Promise<void> {
     process.exit(1);
   }
 
+  // 检查是否启用调试模式
+  const debugIndex = args.indexOf('--debug');
+  const debugMode = debugIndex !== -1;
+  if (debugMode) {
+    args.splice(debugIndex, 1); // 移除debug参数
+  }
+
   if (args[0] === '-d' && args[1]) {
-    await processDirectory(args[1]);
+    await processDirectory(args[1], debugMode);
   } else if (args[0].endsWith('.md')) {
-    await processImagePaths(args[0]);
+    await processImagePaths(args[0], debugMode);
   } else {
     console.error('❌ 无效参数');
     process.exit(1);

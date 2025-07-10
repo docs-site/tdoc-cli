@@ -61,6 +61,7 @@ program
   .command('img [path]')
   .description('处理markdown文件中的图片路径')
   .option('-d, --dir', '处理目录中git修改/新增的markdown文件')
+  .option('--debug', '显示详细处理信息')
   .action(async (path, options) => {
     try {
       const args = [];
@@ -68,6 +69,9 @@ program
         args.push('-d');
       }
       args.push(path);
+      if (options.debug) {
+        args.push('--debug');
+      }
       await processImages(args);
     } catch (err) {
       console.error('❌ 处理图片路径失败:', (err as Error).message);
