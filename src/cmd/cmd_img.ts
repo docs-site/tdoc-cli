@@ -79,7 +79,7 @@ async function processImagePaths(filePath: string, debugMode = false, transformM
       line = line.replace(
         /!\[.*?\]\((?!http)([^)]+)\)/g,
         (match: string, p1: string) => {
-          if (!p1.startsWith('http') && !p1.startsWith('./')) {
+          if (!p1.startsWith('http') && !p1.startsWith('/') && !p1.match(/^[a-zA-Z]:[\\\/]/)) {
             totalImages++;
           }
           
@@ -121,9 +121,9 @@ async function processImagePaths(filePath: string, debugMode = false, transformM
        * - 回调函数检查路径是否需要添加'./'前缀
        */
       line = line.replace(
-        /<img[^>]+src="(?!http)([^"]+)"[^>]*>/g,
+        /<img\s+[^>]*src="(?!http)([^"]+)"[^>]*>/g,
         (match: string, p1: string) => {
-          if (!p1.startsWith('http') && !p1.startsWith('./')) {
+          if (!p1.startsWith('http') && !p1.startsWith('/') && !p1.match(/^[a-zA-Z]:[\\\/]/)) {
             totalImages++;
           }
           
