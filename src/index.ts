@@ -61,12 +61,16 @@ program
   .command('img [path]')
   .description('处理markdown文件中的图片路径')
   .option('-d, --dir', '处理目录中git修改/新增的markdown文件')
+  .option('-t, --transform', '转换图片路径为OSS绝对路径')
   .option('--debug', '显示详细处理信息')
   .action(async (path, options) => {
     try {
       const args = [];
       if (options.dir) {
         args.push('-d');
+      }
+      if (options.transform) {
+        args.push('-t');
       }
       args.push(path);
       if (options.debug) {
