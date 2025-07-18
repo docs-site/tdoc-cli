@@ -16,6 +16,7 @@ import gitSubmoduleCommand from './cmd/cmd_git_submodule';
 import treeCommand from './cmd/cmd_tree';
 import loginCommand from './inquirer-cmd/login';
 import { cmdInit } from './inquirer-cmd/init';
+import sidebarCommand from './cmd/cmd_sidebar';
 
 /**
  * @brief 创建commander的Command实例
@@ -150,6 +151,9 @@ program
       process.exit(1);
     }
   });
+
+// 添加生成sidebar的命令
+program.addCommand(sidebarCommand());
 
 // console.log('Raw arguments:', process.argv); // 用于代码压缩测试，压缩后将不会打印这些参数
 program.parse(); // 参数处理
