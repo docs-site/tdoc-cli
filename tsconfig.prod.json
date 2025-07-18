@@ -1,19 +1,21 @@
 {
-	"extends": "./tsconfig.json",        // 继承基础配置
-	"compilerOptions": {
-		"target": "ES2020",              // 编译目标ES版本
-		"lib": ["esnext"],               // 使用的库声明
-		"rootDir": "./src",              // 源代码目录
-		"resolveJsonModule": true,       // 允许导入JSON模块
-		"outDir": "./dist",              // 输出目录
-		"sourceMap": false,              // 生成sourcemap用于调试
-		"esModuleInterop": true,         // 支持CommonJS/ES模块互操作
-		"strict": true,                  // 启用所有严格类型检查
-	},
-	"include": [                       // 包含的文件
-		"src/**/*.ts"
-	], 
-	"exclude": [                       // 排除的文件
-		"node_modules"
-	] 
+  "extends": "./tsconfig.json", // 继承基础配置
+  "compilerOptions": {
+    "target": "ES2020", // 编译目标ES版本
+    "lib": [
+      "esnext"
+    ], // 使用的库声明
+    "rootDir": "./src", // 源代码目录
+    "resolveJsonModule": true, // 允许导入JSON模块
+    "outDir": "./dist", // 输出目录
+    "sourceMap": false, // 生成sourcemap用于调试
+    "esModuleInterop": true, // 支持CommonJS/ES模块互操作
+    "strict": true, // 启用所有严格类型检查
+  },
+  "include": [ // 包含的文件
+    "src/**/*.ts"
+  ],
+  "exclude": [ // 排除的文件
+    "node_modules"
+  ]
 }
