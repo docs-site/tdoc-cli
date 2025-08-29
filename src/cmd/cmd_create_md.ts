@@ -10,6 +10,7 @@
 import fs from 'fs';
 import path from 'path';
 import readline from 'readline';
+import { randomUUID } from 'crypto';
 import { getCurrentDateTime } from '../utils/sys_time';
 
 /**
@@ -41,16 +42,77 @@ function readTemplate(templatePath: string): string {
 }
 
 /**
+ * @brief 生成带前导斜杠的24位十六进制永久链接ID
+ * @return {string} 格式为 /xxxxxxxxxxxxxxxxxxxxxxxx 的25位字符串
+ * @description 生成规则:
+ * 1. 前面部分: YYYYMMDDHHMMSS (年月日时分秒) 编码成十六进制
+ * 2. 中间部分: 毫秒的十六进制表示
+ * 3. 后面部分: 从UUID中取对应的位数数字
+ * 4. 总长度: 24位十六进制数 + 前导斜杠 = 25位
+ * @note 优化逻辑确保在毫秒级别也能生成唯一ID
+ */
+function generatePermalink(): string {
+  const now = new Date();
+  
+  // 获取年月日时分秒
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  
+  // 组合成 YYYYMMDDHHMMSS 格式
+  const timestampStr = `${year}${month}${day}${hours}${minutes}${seconds}`;
+  
+  // 将时间戳字符串转换为BigInt然后转换为十六进制
+  const timestampBigInt = BigInt(timestampStr);
+  let timestampHex = timestampBigInt.toString(16);
+  
+  // 获取毫秒并转换为十六进制
+  const milliseconds = now.getMilliseconds();
+  const millisHex = milliseconds.toString(16).padStart(3, '0');
+  
+  // 生成UUID并移除连字符
+  const uuid = randomUUID().replace(/-/g, '');
+  
+  // 计算需要从UUID中取的位数
+  const usedLength = timestampHex.length + millisHex.length;
+  const remainingLength = 24 - usedLength;
+  
+  let permalink: string;
+  
+  if (remainingLength < 0) {
+    // 如果时间戳部分过长，截断时间戳部分
+    timestampHex = timestampHex.substring(0, timestampHex.length + remainingLength);
+    const finalLength = timestampHex.length + millisHex.length;
+    const uuidPart = uuid.substring(0, 24 - finalLength);
+    permalink = timestampHex + millisHex + uuidPart;
+  } else {
+    // 从UUID中取对应位数的字符
+    const uuidPart = uuid.substring(0, remainingLength);
+    
+    // 组合成最终的24位十六进制ID
+    permalink = timestampHex + millisHex + uuidPart;
+    permalink = permalink.padEnd(24, '0').substring(0, 24);
+  }
+  
+  // 添加前导斜杠
+  return `/${permalink}`;
+}
+
+/**
  * @brief 替换模板中的占位符生成最终内容
  * @param {string} template - 模板内容
  * @param {string} name - 要替换的标题名称
  * @return {string} 替换后的内容
- * @note 替换模板中的{{ title }}和{{ date }}占位符
+ * @note 替换模板中的{{ title }}、{{ date }}和{{ permalink }}占位符
  */
 function generateContent(template: string, name: string): string {
   return template
     .replace(/{{ title }}/g, name)
-    .replace(/{{ date }}/g, getCurrentDateTime());
+    .replace(/{{ date }}/g, getCurrentDateTime())
+    .replace(/{{ permalink }}/g, generatePermalink());
 }
 
 /**

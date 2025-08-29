@@ -2,10 +2,11 @@
 title: {{ title }}
 date: {{ date }}
 icon: famicons:logo-markdown
+permalink: {{ permalink }}
 index: true
 tags:
 categories:
-copyright: true
+copyright: false
 keywords:
 cover:
 comments:
