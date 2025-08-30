@@ -11,6 +11,7 @@
 import { Command } from 'commander';
 import { createMarkdownFile } from './cmd_create_md';
 import { parseMarkdownMetadata } from './cmd_parse_md';
+import { addFrontmatter } from './cmd_add_frontmatter';
 import type { CommandOptions } from "./types"
 
 /**
@@ -43,6 +44,20 @@ function registerMarkdownCommands(program: Command): void {
         await parseMarkdownMetadata(file);
       } catch (err) {
         console.error('❌ 解析markdown元数据失败:', (err as Error).message);
+        process.exit(1);
+      }
+    });
+  
+  // 添加 m:a 命令
+  program
+    .command('m:a <target>')
+    .description('为markdown文件添加frontmatter')
+    .option('-d, --dir', '处理目录中的所有markdown文件')
+    .action(async (target: string, options: { dir?: boolean }) => {
+      try {
+        await addFrontmatter(target, options);
+      } catch (err) {
+        console.error('❌ 为markdown文件添加frontmatter失败:', (err as Error).message);
         process.exit(1);
       }
     });
