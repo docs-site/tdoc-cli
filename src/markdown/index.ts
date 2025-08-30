@@ -11,18 +11,7 @@
 import { Command } from 'commander';
 import { createMarkdownFile } from './cmd_create_md';
 import { parseMarkdownMetadata } from './cmd_parse_md';
-
-/**
- * @interface CommandOptions
- * @property {string} [template] - 使用的模板名称 (默认为'post')
- * @property {boolean} [force] - 是否强制覆盖已存在的文件
- * @property {string} [dir] - 指定输出目录 (默认为'test')
- */
-interface CommandOptions {
-  template?: string;
-  force?: boolean;
-  dir?: string;
-}
+import type { CommandOptions } from "./types"
 
 /**
  * @brief 注册markdown相关的命令

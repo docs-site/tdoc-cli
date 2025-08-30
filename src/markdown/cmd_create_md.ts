@@ -11,18 +11,8 @@ import fs from 'fs';
 import path from 'path';
 import readline from 'readline';
 import { generatePermalink as generatePermalinkHelper } from './helper';
+import type { CommandOptions } from "./types"
 
-/**
- * @interface CommandOptions
- * @property {string} [template] - 使用的模板名称 (默认为'post')
- * @property {boolean} [force] - 是否强制覆盖已存在的文件
- * @property {string} [dir] - 指定输出目录 (默认为'test')
- */
-interface CommandOptions {
-  template?: string;
-  force?: boolean;
-  dir?: string;
-}
 
 /**
  * @brief 读取模板文件内容
