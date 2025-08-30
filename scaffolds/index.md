@@ -1,24 +1,15 @@
 ---
 title: {{ title }}
 date: {{ date }}
-icon: famicons:logo-markdown
 permalink: {{ permalink }}
-index: true
-tags:
-categories:
-copyright: false
-keywords:
-cover:
-comments:
-mathjax:
-top:
-description:
+icon: laptop-code
+layout: page
+catalogue: true
+path: {{ path }}
 tdoc:
   detailDate: {{ detailDate }}
   fulluuid: {{ fulluuid }}
   useduuid: {{ useduuid }}
 ---
 
-
-<!-- more -->
-
+这是《{{ dir }}》的一些笔记。

@@ -10,13 +10,13 @@
 
 import { Command } from 'commander';
 import pkg from '../package.json';
-import { createMarkdownFile } from './cmd/cmd_create_md';
 import { main as processImages } from './cmd/cmd_img';
 import gitSubmoduleCommand from './cmd/cmd_git_submodule';
 import treeCommand from './cmd/cmd_tree';
 import loginCommand from './inquirer-cmd/login';
 import { cmdInit } from './inquirer-cmd/init';
 import sidebarCommand from './cmd/cmd_sidebar';
+import { registerMarkdownCommands } from './markdown';
 
 /**
  * @brief 创建commander的Command实例
@@ -84,23 +84,6 @@ program
     }
   });
 
-// 添加创建markdown文件的命令
-program
-  .command('new <filename>')
-  .alias('n')
-  .description('创建新的markdown文档')
-  .option('-t, --template <name>', '指定模板名称', 'post')
-  .option('-f, --force', '强制覆盖已存在的文件')
-  .option('-d, --dir <directory>', '指定输出目录')
-  .action(async (filename, options) => {
-    try {
-      await createMarkdownFile(filename, options);
-    } catch (err) {
-      console.error('❌ 创建文档失败:', (err as Error).message);
-      process.exit(1);
-    }
-  });
-
 // 添加处理git子模块的命令
 program
   .command(gitSubmoduleCommand.command)
@@ -154,6 +137,9 @@ program
 
 // 添加生成sidebar的命令
 program.addCommand(sidebarCommand());
+
+// 注册markdown相关的命令
+registerMarkdownCommands(program);
 
 // console.log('Raw arguments:', process.argv); // 用于代码压缩测试，压缩后将不会打印这些参数
 program.parse(); // 参数处理
