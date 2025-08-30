@@ -17,6 +17,7 @@ import loginCommand from './inquirer-cmd/login';
 import { cmdInit } from './inquirer-cmd/init';
 import sidebarCommand from './cmd/cmd_sidebar';
 import { registerMarkdownCommands } from './markdown';
+import mistCommand from './mist/mist-cli';
 
 /**
  * @brief 创建commander的Command实例
@@ -137,6 +138,9 @@ program
 
 // 添加生成sidebar的命令
 program.addCommand(sidebarCommand());
+
+// 添加mist相关命令
+program.addCommand(mistCommand());
 
 // 注册markdown相关的命令
 registerMarkdownCommands(program);
