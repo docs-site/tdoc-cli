@@ -10,6 +10,7 @@
 
 import { Command } from 'commander';
 import { createMarkdownFile } from './cmd_create_md';
+import { parseMarkdownMetadata } from './cmd_parse_md';
 
 /**
  * @interface CommandOptions
@@ -40,6 +41,19 @@ function registerMarkdownCommands(program: Command): void {
         await createMarkdownFile(filename, options);
       } catch (err) {
         console.error('❌ 创建文档失败:', (err as Error).message);
+        process.exit(1);
+      }
+    });
+  
+  // 添加 m:p 命令
+  program
+    .command('m:p <file>')
+    .description('解析markdown文件中的元数据')
+    .action(async (file: string) => {
+      try {
+        await parseMarkdownMetadata(file);
+      } catch (err) {
+        console.error('❌ 解析markdown元数据失败:', (err as Error).message);
         process.exit(1);
       }
     });

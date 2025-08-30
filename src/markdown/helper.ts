@@ -87,4 +87,4 @@ function generatePermalink(date: Date): PermalinkData {
   };
 }
 
-export { generatePermalink, PermalinkData };
+export { generatePermalink, PermalinkData, PERMALINK_PREFIX };
