@@ -50,6 +50,13 @@ function scanDirectories(dirPath: string, basePath: string): Map<string, string>
   for (const entry of entries) {
     if (entry.isDirectory()) {
       const fullPath = path.join(dirPath, entry.name);
+      // 检查当前目录下是否有同名的.md文档，若有则跳过
+      const mdFilePath = path.join(dirPath, entry.name + '.md');
+      if (fs.existsSync(mdFilePath)) {
+        // console.log(`🔍 跳过目录 "${entry.name}"，因为存在同名的.md文档`);
+        continue;
+      }
+      
       // 计算相对于basePath的路径
       let relativePath = path.relative(basePath, fullPath);
       // 确保使用Unix风格的路径分隔符
