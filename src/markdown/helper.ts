@@ -12,6 +12,9 @@ import fs from 'fs';
 import path from 'path';
 import { randomUUID } from 'crypto';
 
+// 定义sdoc目录名，方便后期修改
+const SDOC_DIR_NAME = 'sdoc';
+
 const PERMALINK_PREFIX = 'docs'
 /**
  * @interface PermalinkData
@@ -260,5 +263,87 @@ export {
   getIndexDir,
   getIndexPath,
   generateContent,
-  generateIndexContent
+  generateIndexContent,
+  processPathWithMap
 };
+
+/**
+ * @brief 根据路径映射表处理permalink
+ * @param {string} outputDir - 输出目录的绝对路径
+ * @param {string} [mapFile] - 路径映射表文件路径，如果不提供则使用默认路径
+ * @return {string | null} 处理后的路径，如果没有有效映射则返回null
+ */
+async function processPathWithMap(outputDir: string, mapFile?: string): Promise<string | null> {
+  try {
+    // 获取输出目录的绝对路径
+    const absoluteOutputDir = path.resolve(outputDir);
+    
+    // 检查路径中是否含有sdoc目录
+    const sdocIndex = absoluteOutputDir.indexOf(SDOC_DIR_NAME);
+    if (sdocIndex === -1) {
+      console.error(`❌ 输出目录中不包含'${SDOC_DIR_NAME}': ${absoluteOutputDir}`);
+      return null;
+    }
+    
+    // 确定映射文件路径
+    let pathMapPath: string;
+    if (mapFile) {
+      // 如果提供了映射文件路径
+      pathMapPath = path.isAbsolute(mapFile)
+        ? mapFile
+        : path.join(process.cwd(), mapFile);
+    } else {
+      // 如果没有提供映射文件路径，使用默认路径
+      // 从sdoc开始截断路径
+      const sdocPath = absoluteOutputDir.substring(0, sdocIndex + SDOC_DIR_NAME.length);
+      // 默认映射文件路径 (只支持.js类型)
+      pathMapPath = path.join(sdocPath, 'path-map.js');
+    }
+    
+    // 检查映射文件是否存在
+    if (!fs.existsSync(pathMapPath)) {
+      console.error(`❌ 路径映射文件不存在: ${pathMapPath}`);
+      console.error(`💡 提示: 使用 'tdoc m:m -d path' 命令生成路径映射文件, path 需要包含 ${SDOC_DIR_NAME}, 都是以${SDOC_DIR_NAME}为基础路劲`);
+      return null;
+    }
+    
+    // 读取并解析映射文件 (只支持.js类型)
+    let pathMap: Record<string, string>;
+    if (!pathMapPath.endsWith('.js')) {
+        console.error(`❌ 映射文件必须是.js类型: ${pathMapPath}`);
+        return null;
+    }
+    
+    // 使用require导入JS文件
+    let loadedMap = require(pathMapPath);
+    // 处理ES6模块的default导出
+    pathMap = loadedMap.default || loadedMap;
+    
+    // 从sdoc开始截断路径
+    const sdocPath = absoluteOutputDir.substring(sdocIndex);
+    
+    // 分割路径为各个部分并进行映射
+    const pathParts = sdocPath.split(path.sep);
+    const mappedParts: string[] = [];
+    
+    for (const part of pathParts) {
+      if (part === SDOC_DIR_NAME) {
+        // 直接添加sdoc
+        mappedParts.push(part);
+      } else if (pathMap[part]) {
+        // 如果在映射表中找到，则使用映射值
+        mappedParts.push(pathMap[part]);
+      } else {
+        // 如果没有找到映射，则返回null
+        console.error(`❌ 路径部分'${part}'没有有效的映射`);
+        return null;
+      }
+    }
+    
+    // 返回映射后的路径
+    return mappedParts.join('/');
+  } catch (err) {
+    console.error(`❌ 处理路径映射时出错: ${(err as Error).message}`);
+    return null;
+  }
+}

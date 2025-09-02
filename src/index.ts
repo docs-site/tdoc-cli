@@ -8,6 +8,7 @@
  * ======================================================
  */
 
+
 import { Command } from 'commander';
 import pkg from '../package.json';
 import { main as processImages } from './cmd/cmd_img';
@@ -18,7 +19,6 @@ import { cmdInit } from './inquirer-cmd/init';
 import sidebarCommand from './cmd/cmd_sidebar';
 import { registerMarkdownCommands } from './markdown';
 import mistCommand from './mist/mist-cli';
-
 /**
  * @brief 创建commander的Command实例
  */

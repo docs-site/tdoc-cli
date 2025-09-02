@@ -7,6 +7,7 @@
  * Description: 创建markdown文件的命令实现
  * ======================================================
  */
+
 import fs from 'fs';
 import path from 'path';
 import readline from 'readline';
@@ -15,17 +16,10 @@ import {
   readTemplate,
   formatDateTime,
   generateContent,
-  generateIndexContent
+  generateIndexContent,
+  processPathWithMap
 } from './helper';
 import type { CommandOptions } from "./types"
-
-
-/**
- * @brief 读取模板文件内容
- * @param {string} templatePath - 模板文件路径
- * @return {string} 模板文件内容
- * @throws {Error} 当文件读取失败时抛出异常
- */
 
 /**
  * @brief 确认是否覆盖已存在的文件
@@ -87,8 +81,27 @@ async function createMarkdownFile(
     // 3. 生成文件内容
     // 获取当前时间（包括毫秒）用于统一时间源
     const currentTime = new Date();
+    
+    // 处理路径映射
+    let customPermalinkPrefix: string | null = null;
+    if (options.map !== undefined) {
+      // 当-m参数提供值或为true时，处理路径映射
+      const mapFilePath = options.map === true ? undefined : (options.map as string);
+      const mappedPath = await processPathWithMap(outputDir, mapFilePath);
+      if (mappedPath === null) {
+        console.error('❌ 路径映射失败，无法创建文档');
+        process.exit(1);
+      }
+      customPermalinkPrefix = mappedPath;
+    }
+    
     // 生成permalink和UUID信息用于后续打印
     const permalinkData = generatePermalinkHelper(currentTime);
+    
+    // 如果有自定义的permalink前缀，则修改permalink
+    if (customPermalinkPrefix) {
+      permalinkData.permalink = `/${customPermalinkPrefix}${permalinkData.permalink}`;
+    }
 
     // 生成详细时间戳（中国时区格式，包含毫秒）
     const detailDate = `${formatDateTime(currentTime)}.${String(currentTime.getMilliseconds()).padStart(3, '0')}`;

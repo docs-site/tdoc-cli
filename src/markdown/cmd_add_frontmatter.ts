@@ -14,7 +14,8 @@ import {
   readTemplate,
   formatDateTime,
   generateContent,
-  generateIndexContent
+  generateIndexContent,
+  processPathWithMap
 } from './helper';
 
 /**
@@ -37,9 +38,10 @@ function hasFrontmatter(content: string): boolean {
 /**
  * @brief 生成frontmatter内容
  * @param {string} filePath - 目标文件路径
+ * @param {string | boolean} [mapFile] - 路径映射文件路径，如果不提供则使用默认路径
  * @return {string} 生成的frontmatter内容
  */
-function generateFrontmatter(filePath: string): string {
+async function generateFrontmatter(filePath: string, mapFile?: string | boolean): Promise<string> {
   // 获取文件名（不带扩展名）
   const fileName = path.basename(filePath, '.md');
   
@@ -58,14 +60,33 @@ function generateFrontmatter(filePath: string): string {
   // 3. 生成文件内容
   // 获取当前时间（包括毫秒）用于统一时间源
   const currentTime = new Date();
-  // 生成permalink和UUID信息用于后续打印
-  const permalinkData = generatePermalink(currentTime);
-  
-  // 生成详细时间戳（中国时区格式，包含毫秒）
-  const detailDate = `${formatDateTime(currentTime)}.${String(currentTime.getMilliseconds()).padStart(3, '0')}`;
   
   // 获取文件所在目录
   const outputDir = path.dirname(filePath);
+  
+  // 处理路径映射
+  let customPermalinkPrefix: string | null = null;
+  if (mapFile !== undefined) {
+    // 当-m参数提供值或为true时，处理路径映射
+    const mapFilePath = mapFile === true ? undefined : (mapFile as string);
+    const mappedPath = await processPathWithMap(outputDir, mapFilePath);
+    if (mappedPath === null) {
+      console.error('❌ 路径映射失败，无法添加frontmatter');
+      process.exit(1);
+    }
+    customPermalinkPrefix = mappedPath;
+  }
+  
+  // 生成permalink和UUID信息用于后续打印
+  const permalinkData = generatePermalink(currentTime);
+  
+  // 如果有自定义的permalink前缀，则修改permalink
+  if (customPermalinkPrefix) {
+    permalinkData.permalink = `/${customPermalinkPrefix}${permalinkData.permalink}`;
+  }
+  
+  // 生成详细时间戳（中国时区格式，包含毫秒）
+  const detailDate = `${formatDateTime(currentTime)}.${String(currentTime.getMilliseconds()).padStart(3, '0')}`;
   
   const content = fileName.toLowerCase() === 'index'
     ? generateIndexContent(template, outputDir, currentTime, permalinkData.permalink, detailDate, permalinkData.fulluuid, permalinkData.useduuid)
@@ -118,10 +139,11 @@ function addFrontmatterToFile(filePath: string, frontmatter: string): void {
  * @param {object} options - 命令行选项
  * @param {boolean} options.dir - 是否处理目录中的所有markdown文件
  * @param {boolean} options.verbose - 是否显示详细信息
+ * @param {string | boolean} [options.map] - 路径映射选项，当提供值或为true时启用路径映射
  * @return {Promise<void>} 无返回值
  * @async
  */
-async function addFrontmatter(target: string, options: { dir?: boolean; verbose?: boolean }): Promise<void> {
+async function addFrontmatter(target: string, options: { dir?: boolean; verbose?: boolean; map?: string | boolean }): Promise<void> {
   try {
     // 检查目标是文件还是目录
     const stat = fs.statSync(target);
@@ -130,7 +152,7 @@ async function addFrontmatter(target: string, options: { dir?: boolean; verbose?
       // 处理单个文件
       if (path.extname(target) === '.md') {
         // 生成frontmatter内容（默认使用post模板）
-        const frontmatter = generateFrontmatter(target);
+        const frontmatter = await generateFrontmatter(target, options.map);
         addFrontmatterToFile(target, frontmatter);
       } else {
         console.log(`⚠️  文件不是markdown格式: ${target}`);
@@ -144,7 +166,7 @@ async function addFrontmatter(target: string, options: { dir?: boolean; verbose?
         
         if (fileStat.isFile() && path.extname(filePath) === '.md') {
           // 生成frontmatter内容（默认使用post模板）
-          const frontmatter = generateFrontmatter(filePath);
+          const frontmatter = await generateFrontmatter(filePath, options.map);
           addFrontmatterToFile(filePath, frontmatter);
         }
       }
