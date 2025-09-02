@@ -66,13 +66,22 @@ interface ParsedPermalink {
  * @returns {ParsedPermalink} 包含时间戳信息的对象
  */
 function parsePermalink(permalink: string): ParsedPermalink {
-  // 移除前导斜杠和前缀
-  let hexStr = permalink.startsWith('/') ? permalink.substring(1) : permalink;
-  if (hexStr.startsWith(PERMALINK_PREFIX + '/')) {
-    hexStr = hexStr.substring(PERMALINK_PREFIX.length + 1);
+  // 移除前导斜杠
+  let processedPermalink = permalink.startsWith('/') ? permalink.substring(1) : permalink;
+  
+  // 提取最后的24位十六进制数部分（支持带路径映射的格式）
+  // 例如: "sdoc/default/docs/126b07d4923a2b9e6fb3e6b1" -> "126b07d4923a2b9e6fb3e6b1"
+  const parts = processedPermalink.split('/');
+  let hexStr = parts[parts.length - 1]; // 取最后一部分
+  
+  // 验证是否为24位十六进制数
+  if (hexStr.length !== 24) {
+    throw new Error('永久链接格式不正确，应为24位十六进制数');
   }
   
-  if (hexStr.length !== 24) {
+  // 验证是否只包含十六进制字符
+  const hexRegex = /^[0-9a-fA-F]{24}$/;
+  if (!hexRegex.test(hexStr)) {
     throw new Error('永久链接格式不正确，应为24位十六进制数');
   }
   
