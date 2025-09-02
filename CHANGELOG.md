@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.9](https://github.com/docs-site/tdoc-cli/compare/v1.1.8...v1.1.9) (2025-09-02)
+
+
+### Features
+
+* **cmd:** 添加生成映射文件命令、支持永久链接的路径映射 ([96c4ee1](https://github.com/docs-site/tdoc-cli/commit/96c4ee135e01ca555e38efcce61c4b3eab61e415))
+
+
+### Bug Fixes
+
+* **cmd:** 🐞 修复生成path-map.js文件时会扫描md文档资源目录的问题 ([0931d1c](https://github.com/docs-site/tdoc-cli/commit/0931d1c08eb8d6826b79723d03cfe2767cdc7447))
+* **cmd:** 🐞 修复tdoc m:p无法解析带路径映射的permalink的问题 ([5d0a758](https://github.com/docs-site/tdoc-cli/commit/5d0a758f70dc0661edb26ecb2e01e04888b28b53))
+
+
+### Docs
+
+* **docs:** 📚 更新markdown命令的README.md文档 ([9f4e598](https://github.com/docs-site/tdoc-cli/commit/9f4e598c35040c1dc70da968f46471dd9555a3c6))
+
 ### [1.1.8](https://github.com/docs-site/tdoc-cli/compare/v1.1.7...v1.1.8) (2025-08-30)
 
 
