@@ -78,7 +78,9 @@ async function generateFrontmatter(filePath: string, mapFile?: string | boolean)
   }
   
   // 生成permalink和UUID信息用于后续打印
-  const permalinkData = generatePermalink(currentTime);
+  // 在映射模式下不使用默认前缀
+  const usePrefix = mapFile === undefined;
+  const permalinkData = generatePermalink(currentTime, usePrefix);
   
   // 如果有自定义的permalink前缀，则修改permalink
   if (customPermalinkPrefix) {
@@ -120,7 +122,7 @@ function addFrontmatterToFile(filePath: string, frontmatter: string): void {
     }
     
     // 将frontmatter和原内容合并，并在最后添加一个空行
-    const newContent = frontmatter + '\n\n' + content + '\n';
+    const newContent = frontmatter + '\n\n' + content;
     
     // 确保使用LF作为换行符
     const normalizedContent = newContent.replace(/\r\n/g, '\n');

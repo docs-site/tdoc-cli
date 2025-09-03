@@ -96,7 +96,9 @@ async function createMarkdownFile(
     }
     
     // 生成permalink和UUID信息用于后续打印
-    const permalinkData = generatePermalinkHelper(currentTime);
+    // 在映射模式下不使用默认前缀
+    const usePrefix = options.map === undefined;
+    const permalinkData = generatePermalinkHelper(currentTime, usePrefix);
     
     // 如果有自定义的permalink前缀，则修改permalink
     if (customPermalinkPrefix) {

@@ -39,7 +39,7 @@ interface PermalinkData {
  * 4. 总长度: 24位十六进制数 + 前导斜杠 = 25位
  * @note 优化逻辑确保在毫秒级别也能生成唯一ID
  */
-function generatePermalink(date: Date): PermalinkData {
+function generatePermalink(date: Date, usePrefix: boolean = true): PermalinkData {
   // 获取年月日时分秒
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -84,9 +84,14 @@ function generatePermalink(date: Date): PermalinkData {
     permalink = permalink.padEnd(24, '0').substring(0, 24);
   }
   
+  // 根据usePrefix参数决定是否添加前缀
+  const finalPermalink = usePrefix
+    ? `/${PERMALINK_PREFIX}/${permalink}`
+    : `/${permalink}`;
+  
   // 添加前导斜杠
   return {
-    permalink: `/${PERMALINK_PREFIX}/${permalink}`,
+    permalink: finalPermalink,
     fulluuid,
     useduuid
   };
