@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.10](https://github.com/docs-site/tdoc-cli/compare/v1.1.9...v1.1.10) (2025-09-03)
+
+
+### Code Refactoring
+
+* **cmd:** ♻️ md文档使用路径映射时不添加docs前缀 ([1244d6e](https://github.com/docs-site/tdoc-cli/commit/1244d6eea8bd4fc2570fc6101a1431fa2e6f2ec7))
+
 ### [1.1.9](https://github.com/docs-site/tdoc-cli/compare/v1.1.8...v1.1.9) (2025-09-02)
 
 
