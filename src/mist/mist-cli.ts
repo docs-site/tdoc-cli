@@ -13,6 +13,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import { execSync } from 'child_process';
 import { input, confirm } from '@inquirer/prompts';
+import { ConfigReplacementRule, UpdateConfigParams } from './types';
 
 /**
  * @brief 从GitHub模板初始化Vitepress站点
@@ -47,15 +48,17 @@ async function initMistProject(dirName?: string, yes = false): Promise<void> {
     // 切换到项目目录
     process.chdir(projectDir);
     
-    console.log('🔄 正在从GitHub模板克隆Vitepress站点...');
+    // 使用git从模板仓库创建新项目（支持GitHub和Gitee回退）
+    await cloneProjectTemplate();
     
-    // 使用git从模板仓库创建新项目
-    execSync('git clone https://github.com/docs-site/vitepress-theme-mist-docs .', {
-      stdio: 'inherit'
-    });
-    
-    // 更新配置文件中的title和description
-    await updateConfigFile(answers.title, answers.description);
+    // 更新配置文件中的base URL和GitHub链接
+    const updateParams = {
+      dirName: answers.dirName,
+      title: answers.title,
+      description: answers.description
+    };
+    await updateConfigFile(updateParams);
+    await updateWorkflowFile(updateParams);
     
     // 删除.git目录以解除与模板仓库的关联
     if (fs.existsSync('.git')) {
@@ -125,39 +128,161 @@ async function collectUserInput(dirName?: string, yes = false) {
       ? false
       : await confirm({
           message: '是否自动安装依赖?',
-          default: false
+          default: true
         })
   };
 }
 
 /**
- * @brief 更新Vitepress配置文件中的title和description
- * @param {string} title - 站点标题
- * @param {string} description - 站点描述
+ * @brief 从GitHub或Gitee克隆项目模板
  * @returns {Promise<void>}
  */
-async function updateConfigFile(title: string, description: string): Promise<void> {
+async function cloneProjectTemplate(): Promise<void> {
+  const githubUrl = 'https://github.com/docs-site/vitepress-theme-mist-docs.git';
+  const giteeUrl = 'https://gitee.com/docs-site/vitepress-theme-mist-docs.git';
+  
+  try {
+    console.log('🔄 正在从GitHub模板克隆Vitepress站点...');
+    execSync(`git clone --depth=1 ${githubUrl} .`, {
+      stdio: 'inherit',
+      timeout: 30000 // 30秒超时
+    });
+    console.log('✅ GitHub克隆成功');
+  } catch (githubError) {
+    console.warn('⚠️  GitHub克隆失败，尝试从Gitee镜像下载...');
+    try {
+      console.log('🔄 正在从Gitee镜像克隆Vitepress站点...');
+      execSync(`git clone --depth=1 ${giteeUrl} .`, {
+        stdio: 'inherit',
+        timeout: 30000 // 30秒超时
+      });
+      console.log('✅ Gitee克隆成功');
+    } catch (giteeError) {
+      console.error('❌ GitHub和Gitee克隆均失败:');
+      console.error(`GitHub错误: ${(githubError as Error).message}`);
+      console.error(`Gitee错误: ${(giteeError as Error).message}`);
+      throw new Error('项目模板下载失败，请检查网络连接或稍后重试');
+    }
+  }
+}
+
+/**
+ * @brief 配置替换规则数组
+ * @param {UpdateConfigParams} params - 配置更新参数
+ * @returns {ConfigReplacementRule[]} 替换规则数组
+ */
+function getConfigReplacementRules(params: UpdateConfigParams): ConfigReplacementRule[] {
+  return [
+    {
+      search: /title:\s*"[^"]*"/,
+      replace: `title: "${params.title}"`,
+      description: '更新站点标题'
+    },
+    {
+      search: /description:\s*"[^"]*"/,
+      replace: `description: "${params.description}"`,
+      description: '更新站点描述'
+    },
+    {
+      search: /base:\s*'\/vitepress-theme-mist-docs\/'/,
+      replace: `base: '/${params.dirName}/'`,
+      description: '更新base URL'
+    },
+    {
+      search: /https:\/\/github\.com\/docs-site\/vitepress-theme-mist\.git/,
+      replace: `https://github.com/docs-site/${params.dirName}.git`,
+      description: '更新GitHub链接'
+    }
+  ];
+}
+
+/**
+ * @brief 更新GitHub Actions工作流文件
+ * @param {UpdateConfigParams} params - 配置更新参数
+ * @returns {Promise<void>}
+ */
+async function updateWorkflowFile(params: UpdateConfigParams): Promise<void> {
+  const workflowPath = path.join(process.cwd(), '.github/workflows/deploy-docs.yml');
+  
+  if (fs.existsSync(workflowPath)) {
+    try {
+      let workflowContent = fs.readFileSync(workflowPath, 'utf8');
+      const repName = params.dirName.replace(/-/g, '_'); // 将-替换为_
+      let updated = false;
+      
+      // 替换 repository_dispatch 类型
+      const originalTypes = workflowContent;
+      workflowContent = workflowContent.replace(
+        /types:\s*\[trigger_deployment_vitepress_theme_mist_docs\]/,
+        `types: [trigger_deployment_${repName}]`
+      );
+      if (workflowContent !== originalTypes) {
+        console.log('✅ 更新GitHub Actions事件类型');
+        updated = true;
+      }
+      
+      // 替换 repository_dispatch 条件
+      const originalCondition = workflowContent;
+      workflowContent = workflowContent.replace(
+        /github\.event_name == 'repository_dispatch' && github\.event\.action == 'trigger_deployment_vitepress_theme_mist_docs'/,
+        `github.event_name == 'repository_dispatch' && github.event.action == 'trigger_deployment_${repName}'`
+      );
+      if (workflowContent !== originalCondition) {
+        console.log('✅ 更新GitHub Actions触发条件');
+        updated = true;
+      }
+      
+      if (updated) {
+        // 写回文件
+        fs.writeFileSync(workflowPath, workflowContent);
+        console.log('✅ GitHub Actions工作流文件更新完成');
+      } else {
+        console.log('ℹ️  GitHub Actions工作流文件无需更新');
+      }
+    } catch (err) {
+      console.error('❌ 更新GitHub Actions工作流文件失败:', (err as Error).message);
+    }
+  } else {
+    console.warn('⚠️  GitHub Actions工作流文件不存在，跳过更新');
+  }
+}
+
+/**
+ * @brief 更新Vitepress配置文件
+ * @param {UpdateConfigParams} params - 配置更新参数
+ * @returns {Promise<void>}
+ */
+async function updateConfigFile(params: UpdateConfigParams): Promise<void> {
   const configPath = path.join(process.cwd(), 'src/.vitepress/config.mts');
   
   if (fs.existsSync(configPath)) {
     try {
       let configContent = fs.readFileSync(configPath, 'utf8');
+      const rules = getConfigReplacementRules(params);
+      let updated = false;
       
-      // 更新title
-      configContent = configContent.replace(
-        /title:\s*"[^"]*"/,
-        `title: "${title}"`
-      );
+      // 应用所有替换规则
+      for (const rule of rules) {
+        const originalContent = configContent;
+        const replaceValue = typeof rule.replace === 'function'
+          ? rule.replace(params.dirName)
+          : rule.replace;
+        
+        configContent = configContent.replace(rule.search, replaceValue);
+        
+        if (configContent !== originalContent) {
+          console.log(`✅ ${rule.description}`);
+          updated = true;
+        }
+      }
       
-      // 更新description
-      configContent = configContent.replace(
-        /description:\s*"[^"]*"/,
-        `description: "${description}"`
-      );
-      
-      // 写回文件
-      fs.writeFileSync(configPath, configContent);
-      console.log('✅ 配置文件更新成功');
+      if (updated) {
+        // 写回文件
+        fs.writeFileSync(configPath, configContent);
+        console.log('✅ 配置文件更新完成');
+      } else {
+        console.log('ℹ️  配置文件无需更新');
+      }
     } catch (err) {
       console.error('❌ 更新配置文件失败:', (err as Error).message);
     }

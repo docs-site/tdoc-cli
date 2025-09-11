@@ -4,3 +4,4 @@ dist/
 test/**/*.md
 test/**/*.js
 !test/**/README.md
+*-docs
