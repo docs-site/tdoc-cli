@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.11](https://github.com/docs-site/tdoc-cli/compare/v1.1.9...v1.1.11) (2025-09-11)
+
+
+### Others
+
+* **release:** 1.1.10 [publish] ([5d84e3e](https://github.com/docs-site/tdoc-cli/commit/5d84e3eeddc0188a71af9912e37a6402d745937b))
+
+
+### Code Refactoring
+
+* **cmd:** ♻️ 优化mist init命令 ([c9f5f87](https://github.com/docs-site/tdoc-cli/commit/c9f5f8712cc0992db1aca9dc3e6562196ec8ec7b))
+* **cmd:** ♻️ md文档使用路径映射时不添加docs前缀 ([1244d6e](https://github.com/docs-site/tdoc-cli/commit/1244d6eea8bd4fc2570fc6101a1431fa2e6f2ec7))
+
 ### [1.1.10](https://github.com/docs-site/tdoc-cli/compare/v1.1.9...v1.1.10) (2025-09-03)
 
 
