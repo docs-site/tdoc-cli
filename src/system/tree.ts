@@ -93,9 +93,9 @@ function generateTree(
  * @return {void} 无返回值
  * @note 执行成功时退出码为0，失败时为1
  */
-function main(options: TreeOptions = {}): void {
+function main(dir: string = process.cwd(), options: TreeOptions = {}): void {
   try {
-    const currentDir = process.cwd();
+    const currentDir = dir;
     console.log(path.basename(currentDir));
     // 处理 ignore 参数，支持字符串和数组格式
     const ignoreDirs =
@@ -135,13 +135,13 @@ export default {
 export function registerTreeCommand(program: Command): void {
   // 添加显示目录树结构的命令
   program
-    .command('tree')
-    .description('显示当前目录的树状结构')
+    .command('tree [dir]')
+    .description('显示指定目录的树状结构，默认为当前目录')
     .option('-L, --level <number>', '设置最大递归深度', parseInt)
     .option('-i, --ignore <dirs>', '要忽略的目录列表(逗号分隔)', String)
-    .action((options: TreeOptions) => {
+    .action((dir: string, options: TreeOptions) => {
       try {
-        main(options);
+        main(dir, options);
       } catch (err) {
         console.error('❌ 显示目录树失败:', (err as Error).message);
         process.exit(1);
