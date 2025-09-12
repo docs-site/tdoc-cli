@@ -10,6 +10,7 @@
 import fs from 'fs';
 import path from 'path';
 import { Command } from 'commander';
+import color from 'picocolors';
 
 interface TreeCounts {
   dirCount: number;
@@ -56,7 +57,8 @@ function generateTree(
     // 构建当前项的连接线
     let line = prefix; // 继承父级前缀
     line += isCurrentLast ? '└── ' : '├── '; // 添加当前项连接符号
-    line += file; // 添加文件名
+    // 根据是目录还是文件使用不同颜色
+    line += stats.isDirectory() ? color.blue(file) : color.green(file); // 添加文件名
 
     console.log(line); // 输出当前项
 
