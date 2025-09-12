@@ -253,15 +253,13 @@ async function main(args: string[]): Promise<void> {
 }
 
 /**
- * @brief 注册img命令到program实例
- * @param {Command} program commander的Command实例
- * @return {void} 无返回值
+ * @brief 创建img命令
+ * @return {Command} 配置好的Command实例
  */
-export function registerImgCommand(program: Command): void {
-  // 添加处理图片路径的命令
-  program
-    .command("img [path]")
+function createImgCommand(): Command {
+  const program = new Command("img")
     .description("处理markdown文件中的图片路径")
+    .argument("[path]", "文件或目录路径")
     .option("-d, --dir", "处理目录中git修改/新增的markdown文件")
     .option("-t, --transform", "转换图片路径为OSS绝对路径")
     .option("--debug", "显示详细处理信息")
@@ -284,4 +282,8 @@ export function registerImgCommand(program: Command): void {
         process.exit(1);
       }
     });
+
+  return program;
 }
+
+export { createImgCommand };

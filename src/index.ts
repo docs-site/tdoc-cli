@@ -10,7 +10,7 @@
 
 import { Command } from "commander";
 import pkg from "../package.json";
-import { registerImgCommand } from "./system/img";
+import { createImgCommand } from "./system/img";
 import { createTreeCommand } from "./system/tree";
 import sidebarCommand from "./cmd/cmd_sidebar";
 import { registerMarkdownCommands } from "./markdown";
@@ -66,7 +66,7 @@ program.addCommand(mistCommand()); // 添加mist相关命令
 
 registerMarkdownCommands(program); // 注册markdown相关的命令
 program.addCommand(createTreeCommand()); // 注册tree命令
-registerImgCommand(program); // 注册img命令
+program.addCommand(createImgCommand()); // 注册img命令
 
 // console.log('Raw arguments:', process.argv); // 用于代码压缩测试，压缩后将不会打印这些参数
 program.parse(); // 参数处理
