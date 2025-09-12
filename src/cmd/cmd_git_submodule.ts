@@ -99,13 +99,13 @@ function handleGitSubmodule(dir: string): void {
 }
 
 /**
- * @brief 注册git子模块命令
- * @param {Command} program - commander的Command实例
+ * @brief 创建git子模块命令
+ * @return {Command} 配置好的Command实例
  */
-function registerGitSubmoduleCommand(program: Command): void {
-  program
-    .command("git-submodule [dir]")
+function createGitSubmoduleCommand(): Command {
+  const program = new Command("git-submodule")
     .description("检查并转换git子模块URL格式")
+    .argument("[dir]", "目录路径")
     .action((dir: string) => {
       try {
         handleGitSubmodule(dir);
@@ -114,6 +114,8 @@ function registerGitSubmoduleCommand(program: Command): void {
         process.exit(1);
       }
     });
+
+  return program;
 }
 
-export { registerGitSubmoduleCommand };
+export default createGitSubmoduleCommand;

@@ -15,7 +15,7 @@ import { registerTreeCommand } from "./system/tree";
 import sidebarCommand from "./cmd/cmd_sidebar";
 import { registerMarkdownCommands } from "./markdown";
 import mistCommand from "./mist/mist-cli";
-import { registerGitSubmoduleCommand } from "./cmd/cmd_git_submodule";
+import createGitSubmoduleCommand from "./cmd/cmd_git_submodule";
 import { registerLoginCommand } from "./inquirer-cmd/login";
 import { registerInitCommand } from "./inquirer-cmd/init";
 /**
@@ -57,7 +57,7 @@ function getVersionInfo(): string {
 
 program.version(getVersionInfo(), "-v, --version", "显示版本信息和依赖包");
 
-registerGitSubmoduleCommand(program); // 注册git子模块命令
+program.addCommand(createGitSubmoduleCommand()); // 注册git子模块命令
 registerLoginCommand(program); // 注册登录命令
 registerInitCommand(program); // 注册初始化项目命令
 
