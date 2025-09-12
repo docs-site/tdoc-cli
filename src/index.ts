@@ -13,7 +13,7 @@ import { Command } from 'commander';
 import pkg from '../package.json';
 import { main as processImages } from './cmd/cmd_img';
 import gitSubmoduleCommand from './cmd/cmd_git_submodule';
-import treeCommand from './cmd/cmd_tree';
+import { registerTreeCommand } from './system/tree';
 import loginCommand from './inquirer-cmd/login';
 import { cmdInit } from './inquirer-cmd/init';
 import sidebarCommand from './cmd/cmd_sidebar';
@@ -98,21 +98,6 @@ program
     }
   });
 
-// 添加显示目录树结构的命令
-program
-  .command('tree')
-  .description('显示当前目录的树状结构')
-  .option('-d, --depth <number>', '设置最大递归深度', parseInt)
-  .option('-i, --ignore <dirs>', '要忽略的目录列表(逗号分隔)', String)
-  .action((options) => {
-    try {
-      treeCommand.main(options);
-    } catch (err) {
-      console.error('❌ 显示目录树失败:', (err as Error).message);
-      process.exit(1);
-    }
-  });
-
 // 登录命令
 program
   .command('login')
@@ -144,6 +129,9 @@ program.addCommand(mistCommand());
 
 // 注册markdown相关的命令
 registerMarkdownCommands(program);
+
+// 注册tree命令
+registerTreeCommand(program);
 
 // console.log('Raw arguments:', process.argv); // 用于代码压缩测试，压缩后将不会打印这些参数
 program.parse(); // 参数处理

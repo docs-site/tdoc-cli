@@ -1,6 +1,6 @@
 /** =====================================================
  * Copyright © hk. 2022-2025. All rights reserved.
- * File name  : cmd_tree.ts
+ * File name  : tree.ts
  * Author     : 苏木
  * Date       : 2025-06-18
  * Version    :
@@ -9,6 +9,7 @@
  */
 import fs from 'fs';
 import path from 'path';
+import { Command } from 'commander';
 
 interface TreeCounts {
   dirCount: number;
@@ -123,6 +124,28 @@ export default {
   generateTree,
   main
 };
+
+/**
+ * @brief 注册tree命令到program实例
+ * @param {Command} program commander的Command实例
+ * @return {void} 无返回值
+ */
+export function registerTreeCommand(program: Command): void {
+  // 添加显示目录树结构的命令
+  program
+    .command('tree')
+    .description('显示当前目录的树状结构')
+    .option('-d, --depth <number>', '设置最大递归深度', parseInt)
+    .option('-i, --ignore <dirs>', '要忽略的目录列表(逗号分隔)', String)
+    .action((options: TreeOptions) => {
+      try {
+        main(options);
+      } catch (err) {
+        console.error('❌ 显示目录树失败:', (err as Error).message);
+        process.exit(1);
+      }
+    });
+}
 
 /**
  * @brief 直接执行检查
