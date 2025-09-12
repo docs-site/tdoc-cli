@@ -16,7 +16,7 @@ import sidebarCommand from "./cmd/cmd_sidebar";
 import { registerMarkdownCommands } from "./markdown";
 import mistCommand from "./mist/mist-cli";
 import createGitSubmoduleCommand from "./cmd/cmd_git_submodule";
-import { registerLoginCommand } from "./inquirer-cmd/login";
+import createLoginCommand from "./inquirer-cmd/login";
 import { registerInitCommand } from "./inquirer-cmd/init";
 /**
  * @brief 创建commander的Command实例
@@ -58,7 +58,7 @@ function getVersionInfo(): string {
 program.version(getVersionInfo(), "-v, --version", "显示版本信息和依赖包");
 
 program.addCommand(createGitSubmoduleCommand()); // 注册git子模块命令
-registerLoginCommand(program); // 注册登录命令
+program.addCommand(createLoginCommand()); // 注册登录命令
 registerInitCommand(program); // 注册初始化项目命令
 
 program.addCommand(sidebarCommand()); // 添加生成sidebar的命令

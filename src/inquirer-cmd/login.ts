@@ -12,7 +12,7 @@ function clearStdin() {
 }
 
 // 登录逻辑处理
-export default async function loginCommand() {
+async function loginCommand() {
   // 清空可能存在的预读取输入
   clearStdin();
   await new Promise((resolve) => setImmediate(resolve));
@@ -42,16 +42,15 @@ export default async function loginCommand() {
 }
 
 /**
- * @brief 注册登录命令
- * @param {Command} program - commander的Command实例
+ * @brief 创建登录命令
+ * @return {Command} 配置好的Command实例
  */
-function registerLoginCommand(program: Command): void {
-  program
-    .command("login")
-    .description("用户登录")
-    .action(async () => {
-      await loginCommand();
-    });
+function createLoginCommand(): Command {
+  const program = new Command("login").description("用户登录").action(async () => {
+    await loginCommand();
+  });
+
+  return program;
 }
 
 /**
@@ -62,4 +61,4 @@ if (require.main === module) {
   loginCommand();
 }
 
-export { registerLoginCommand };
+export default createLoginCommand;
