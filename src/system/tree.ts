@@ -17,7 +17,7 @@ interface TreeCounts {
 }
 
 interface TreeOptions {
-  depth?: number;
+  level?: number;
   ignore?: string[] | string; // 可以是数组或逗号分隔的字符串
 }
 
@@ -25,9 +25,9 @@ interface TreeOptions {
  * @brief 生成目录树结构并统计文件/文件夹数量
  * @param {string} dirPath 要遍历的目录路径
  * @param {string} [prefix=''] 当前层级的前缀字符串，用于缩进和连接线
- * @param {boolean} [isLast=true] 当前项是否是父目录的最后一项
  * @param {number} [maxDepth=Infinity] 最大递归深度限制
  * @param {number} [currentDepth=0] 当前递归深度
+ * @param {string[]} [ignoreDirs=[]] 要忽略的目录列表
  * @return {Object} 包含文件夹和文件数量的统计对象 {dirCount: number, fileCount: number}
  */
 function generateTree(
@@ -51,7 +51,7 @@ function generateTree(
     if (stats.isDirectory() && ignoreDirs.includes(file)) {
       continue;
     }
-    const isCurrentLast = index === files.length - 1; // 是否是当前目录的最后一项
+    const isCurrentLast = index === files.length - 1; // 检查是否是当前目录中的最后一项
 
     // 构建当前项的连接线
     let line = prefix; // 继承父级前缀
@@ -65,7 +65,7 @@ function generateTree(
       dirCount++;
       // 如果是目录且未达到最大深度限制，则递归处理
       if (currentDepth < maxDepth - 1) {
-        // 计算子项前缀：添加适当的缩进和连接线
+        // 为子目录项计算前缀：添加适当的缩进和连接线
         const childPrefix = prefix + (isCurrentLast ? '    ' : '│   ');
         const subCounts = generateTree(
           fullPath,
@@ -87,7 +87,7 @@ function generateTree(
 /**
  * @brief 执行tree命令的主函数
  * @param {Object} [options={}] 命令行选项对象
- * @param {number} [options.depth] 最大目录深度限制
+ * @param {number} [options.level] 最大目录深度限制
  * @return {void} 无返回值
  * @note 执行成功时退出码为0，失败时为1
  */
@@ -98,12 +98,12 @@ function main(options: TreeOptions = {}): void {
     // 处理 ignore 参数，支持字符串和数组格式
     const ignoreDirs =
       typeof options.ignore === 'string'
-        ? options.ignore.split(',').map((s) => s.trim())
-        : options.ignore || [];
+        ? options.ignore.split(',').map((s) => s.trim()) // 将逗号分隔的字符串转换为数组
+        : options.ignore || []; // 如果已经是数组则直接使用，否则使用空数组
     const counts = generateTree(
       currentDir,
       '',
-      options.depth || Infinity,
+      options.level || Infinity,
       0,
       ignoreDirs
     );
@@ -135,7 +135,7 @@ export function registerTreeCommand(program: Command): void {
   program
     .command('tree')
     .description('显示当前目录的树状结构')
-    .option('-d, --depth <number>', '设置最大递归深度', parseInt)
+    .option('-L, --level <number>', '设置最大递归深度', parseInt)
     .option('-i, --ignore <dirs>', '要忽略的目录列表(逗号分隔)', String)
     .action((options: TreeOptions) => {
       try {
