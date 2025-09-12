@@ -206,4 +206,4 @@ function createGenerateMapCommand(): Command {
   return program;
 }
 
-export default createGenerateMapCommand;
+export { createGenerateMapCommand };

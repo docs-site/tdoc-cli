@@ -10,6 +10,7 @@
 
 import fs from "fs";
 import path from "path";
+import { Command } from "commander";
 
 /**
  * @interface Metadata
@@ -276,4 +277,24 @@ async function parseMarkdownMetadata(filePath: string): Promise<void> {
   }
 }
 
-export { parseMarkdownMetadata };
+/**
+ * @brief 创建m:p命令
+ * @return {Command} 配置好的Command实例
+ */
+function createMpCommand(): Command {
+  const program = new Command("m:p")
+    .description("解析markdown文件中的元数据")
+    .argument("<file>", "markdown文件路径")
+    .action(async (file: string) => {
+      try {
+        await parseMarkdownMetadata(file);
+      } catch (err) {
+        console.error("❌ 解析markdown元数据失败:", (err as Error).message);
+        process.exit(1);
+      }
+    });
+
+  return program;
+}
+
+export { parseMarkdownMetadata, createMpCommand };

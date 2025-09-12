@@ -9,6 +9,7 @@
  */
 import fs from "fs";
 import path from "path";
+import { Command } from "commander";
 import {
   generatePermalink,
   readTemplate,
@@ -196,4 +197,26 @@ async function addFrontmatter(
   }
 }
 
-export { addFrontmatter };
+/**
+ * @brief 创建m:a命令
+ * @return {Command} 配置好的Command实例
+ */
+function createMaCommand(): Command {
+  const program = new Command("m:a")
+    .description("为markdown文件添加frontmatter")
+    .argument("<target>", "目标文件或目录路径")
+    .option("-d, --dir", "处理目录中的所有markdown文件")
+    .option("-m, --map [file]", "指定路径映射表文件，如果不指定则使用默认文件")
+    .action(async (target: string, options: { dir?: boolean; map?: string }) => {
+      try {
+        await addFrontmatter(target, options);
+      } catch (err) {
+        console.error("❌ 为markdown文件添加frontmatter失败:", (err as Error).message);
+        process.exit(1);
+      }
+    });
+
+  return program;
+}
+
+export { addFrontmatter, createMaCommand };

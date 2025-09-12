@@ -13,7 +13,7 @@ import pkg from "../package.json";
 import { createImgCommand } from "./system/img";
 import { createTreeCommand } from "./system/tree";
 import sidebarCommand from "./cmd/cmd_sidebar";
-import { registerMarkdownCommands } from "./markdown";
+import createMarkdownCommands from "./markdown";
 import mistCommand from "./mist/mist-cli";
 import createGitSubmoduleCommand from "./cmd/cmd_git_submodule";
 import createLoginCommand from "./inquirer-cmd/login";
@@ -64,7 +64,10 @@ program.addCommand(createInitCommand()); // 注册初始化项目命令
 program.addCommand(sidebarCommand()); // 添加生成sidebar的命令
 program.addCommand(mistCommand()); // 添加mist相关命令
 
-registerMarkdownCommands(program); // 注册markdown相关的命令
+// 注册markdown相关的命令
+createMarkdownCommands().forEach((command) => {
+  program.addCommand(command);
+});
 program.addCommand(createTreeCommand()); // 注册tree命令
 program.addCommand(createImgCommand()); // 注册img命令
 

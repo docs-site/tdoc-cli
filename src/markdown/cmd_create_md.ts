@@ -11,6 +11,7 @@
 import fs from "fs";
 import path from "path";
 import readline from "readline";
+import { Command } from "commander";
 import {
   generatePermalink as generatePermalinkHelper,
   readTemplate,
@@ -157,4 +158,28 @@ async function createMarkdownFile(fileName: string, options: CommandOptions = {}
   }
 }
 
-export { createMarkdownFile };
+/**
+ * @brief 创建m:n命令
+ * @return {Command} 配置好的Command实例
+ */
+function createMnCommand(): Command {
+  const program = new Command("m:n")
+    .description("创建新的markdown文档")
+    .argument("<filename>", "文件名（不带扩展名）")
+    .option("-t, --template <name>", "指定模板名称", "post")
+    .option("-f, --force", "强制覆盖已存在的文件")
+    .option("-d, --dir <directory>", "指定输出目录")
+    .option("-m, --map [file]", "指定路径映射表文件，如果不指定则使用默认文件")
+    .action(async (filename: string, options: CommandOptions) => {
+      try {
+        await createMarkdownFile(filename, options);
+      } catch (err) {
+        console.error("❌ 创建文档失败:", (err as Error).message);
+        process.exit(1);
+      }
+    });
+
+  return program;
+}
+
+export { createMarkdownFile, createMnCommand };
