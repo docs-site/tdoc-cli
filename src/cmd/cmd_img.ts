@@ -22,11 +22,6 @@ import simpleGit from "simple-git";
  * @param {string} filePath 文件路径
  * @return {Promise<string>} 相对路径
  */
-async function getRelativePath(filePath: string): Promise<string> {
-  const git = simpleGit(path.dirname(filePath));
-  const rootPath = await git.revparse(["--show-toplevel"]);
-  return path.relative(rootPath.trim(), filePath);
-}
 
 /**
  * @brief 处理markdown文件中的图片路径
@@ -76,7 +71,7 @@ async function processImagePaths(filePath: string, debugMode = false, transformM
        * - 回调函数检查路径是否需要添加'./'前缀
        */
       line = line.replace(/!\[.*?\]\((?!http)([^)]+)\)/g, (match: string, p1: string) => {
-        if (!p1.startsWith("http") && !p1.startsWith("/") && !p1.match(/^[a-zA-Z]:[\\\/]/)) {
+        if (!p1.startsWith("http") && !p1.startsWith("/") && !p1.match(/^[a-zA-Z]:[\\/]/)) {
           totalImages++;
         }
 
@@ -117,7 +112,7 @@ async function processImagePaths(filePath: string, debugMode = false, transformM
        * - 回调函数检查路径是否需要添加'./'前缀
        */
       line = line.replace(/<img\s+[^>]*src="(?!http)([^"]+)"[^>]*>/g, (match: string, p1: string) => {
-        if (!p1.startsWith("http") && !p1.startsWith("/") && !p1.match(/^[a-zA-Z]:[\\\/]/)) {
+        if (!p1.startsWith("http") && !p1.startsWith("/") && !p1.match(/^[a-zA-Z]:[\\/]/)) {
           totalImages++;
         }
 
