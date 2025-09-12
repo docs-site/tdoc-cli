@@ -5,8 +5,22 @@ import path from "path";
 import { execSync } from "child_process";
 
 // 定义默认依赖项
-let devDependencies: string[] = ["@types/node"];
-let dependencies: string[] = [];
+const devDependencies: string[] = ["@types/node"];
+const dependencies: string[] = [];
+
+// 定义用户配置接口
+interface UserConfig {
+  name: string;
+  description: string;
+  author: string;
+  license: string;
+  initGit: boolean;
+  addWorkflow: boolean;
+  addEditorConfig: boolean;
+  addVscodeConfig: boolean;
+  addPrettierConfig: boolean;
+  installDeps: boolean;
+}
 
 /**
  * @brief 创建并验证项目目录结构
@@ -46,7 +60,7 @@ async function collectUserInput(dirName?: string, yes = false, scope?: string) {
   // 自动模式使用默认值，否则通过交互式提示获取用户输入
   return {
     // 项目名称处理逻辑：
-    // - 自动模式：使用目录名或默认值'my-project'
+    // - 自动模式：使用目录名或默认值'my-project'，考虑作用域
     // - 交互模式：提示用户输入，并验证非空
     name: yes
       ? dirName
@@ -54,7 +68,8 @@ async function collectUserInput(dirName?: string, yes = false, scope?: string) {
         : "my-project"
       : await input({
           message: "Project name:",
-          default: dirName ? path.basename(dirName) : undefined,
+          default:
+            dirName && scope ? `@${scope}/${path.basename(dirName)}` : dirName ? path.basename(dirName) : undefined,
           validate: (input: string) => input.trim() !== "" || "Project name is required"
         }),
     description: yes
@@ -172,7 +187,7 @@ function initGitRepo(projectDir: string, addWorkflow: boolean) {
  * @param {string} projectDir - 项目目录路径
  * @param {Object} answers - 用户配置对象
  */
-function copyTemplateFiles(projectDir: string, answers: any) {
+function copyTemplateFiles(projectDir: string, answers: UserConfig) {
   // 处理README文件：
   // 1. 尝试从模板目录读取README模板
   const readmeTemplatePath = path.join(__dirname, "../../npm-template/README.md");
@@ -230,7 +245,7 @@ function copyTemplateFiles(projectDir: string, answers: any) {
  * @param {Object} answers - 用户配置对象
  * @param {string} [scope] - 可选的npm包作用域
  */
-function createPackageJson(projectDir: string, answers: any, scope?: string) {
+function createPackageJson(projectDir: string, answers: UserConfig, scope?: string) {
   // 构建package.json内容
   const packageJson = {
     // 处理包名：如果有作用域则添加作用域前缀
@@ -263,7 +278,7 @@ function createPackageJson(projectDir: string, answers: any, scope?: string) {
  * @param {string} projectDir - 项目目录路径
  * @throws 如果npm安装失败会抛出错误
  */
-function installDependencies(projectDir: string) {
+function installDependencies() {
   try {
     console.log("Installing dependencies...");
 
@@ -306,7 +321,7 @@ export async function cmdInit(dirName?: string, skipPrompts = false, yes = false
   const projectDir = createProjectDir(dirName);
 
   // 收集用户输入
-  const answers = await collectUserInput(dirName, yes, scope);
+  const answers = await collectUserInput(dirName, yes || skipPrompts, scope);
 
   // 切换到项目目录
   process.chdir(projectDir);
@@ -324,7 +339,7 @@ export async function cmdInit(dirName?: string, skipPrompts = false, yes = false
 
   // 安装依赖
   if (answers.installDeps) {
-    installDependencies(projectDir);
+    installDependencies();
   }
 
   console.log(`\n✅ Project ${answers.name} initialized successfully!`);
