@@ -8,14 +8,14 @@
  * ======================================================
  */
 
-import fs from 'fs';
-import path from 'path';
-import { randomUUID } from 'crypto';
+import fs from "fs";
+import path from "path";
+import { randomUUID } from "crypto";
 
 // 定义sdoc目录名，方便后期修改
-const SDOC_DIR_NAME = 'sdoc';
+const SDOC_DIR_NAME = "sdoc";
 
-const PERMALINK_PREFIX = 'docs'
+const PERMALINK_PREFIX = "docs";
 /**
  * @interface PermalinkData
  * @property {string} permalink - 生成的永久链接
@@ -42,33 +42,33 @@ interface PermalinkData {
 function generatePermalink(date: Date, usePrefix: boolean = true): PermalinkData {
   // 获取年月日时分秒
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  const seconds = String(date.getSeconds()).padStart(2, '0');
-  
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const seconds = String(date.getSeconds()).padStart(2, "0");
+
   // 组合成 YYYYMMDDHHMMSS 格式
   const timestampStr = `${year}${month}${day}${hours}${minutes}${seconds}`;
-  
+
   // 将时间戳字符串转换为BigInt然后转换为十六进制
   const timestampBigInt = BigInt(timestampStr);
   let timestampHex = timestampBigInt.toString(16);
-  
+
   // 获取毫秒并转换为十六进制
   const milliseconds = date.getMilliseconds();
-  const millisHex = milliseconds.toString(16).padStart(3, '0');
-  
+  const millisHex = milliseconds.toString(16).padStart(3, "0");
+
   // 生成UUID并移除连字符
-  const fulluuid = randomUUID().replace(/-/g, '');
-  
+  const fulluuid = randomUUID().replace(/-/g, "");
+
   // 计算需要从UUID中取的位数
   const usedLength = timestampHex.length + millisHex.length;
   const remainingLength = 24 - usedLength;
-  
+
   let permalink: string;
   let useduuid: string;
-  
+
   if (remainingLength < 0) {
     // 如果时间戳部分过长，截断时间戳部分
     timestampHex = timestampHex.substring(0, timestampHex.length + remainingLength);
@@ -78,17 +78,15 @@ function generatePermalink(date: Date, usePrefix: boolean = true): PermalinkData
   } else {
     // 从UUID中取对应位数的字符
     useduuid = fulluuid.substring(0, remainingLength);
-    
+
     // 组合成最终的24位十六进制ID
     permalink = timestampHex + millisHex + useduuid;
-    permalink = permalink.padEnd(24, '0').substring(0, 24);
+    permalink = permalink.padEnd(24, "0").substring(0, 24);
   }
-  
+
   // 根据usePrefix参数决定是否添加前缀
-  const finalPermalink = usePrefix
-    ? `/${PERMALINK_PREFIX}/${permalink}`
-    : `/${permalink}`;
-  
+  const finalPermalink = usePrefix ? `/${PERMALINK_PREFIX}/${permalink}` : `/${permalink}`;
+
   // 添加前导斜杠
   return {
     permalink: finalPermalink,
@@ -105,7 +103,7 @@ function generatePermalink(date: Date, usePrefix: boolean = true): PermalinkData
  */
 function readTemplate(templatePath: string): string {
   try {
-    return fs.readFileSync(templatePath, 'utf8');
+    return fs.readFileSync(templatePath, "utf8");
   } catch (err) {
     console.error(`❌ 模板文件读取失败: ${templatePath}`);
     console.error((err as Error).message);
@@ -126,7 +124,7 @@ function getTitle(name: string, outputDir?: string): string {
     let dirName = path.basename(outputDir);
 
     // 处理目录名，去除前缀序号(例如: 04-测试 -> 测试)
-    dirName = dirName.replace(/^\d+-/, '');
+    dirName = dirName.replace(/^\d+-/, "");
 
     return dirName;
   }
@@ -143,12 +141,12 @@ function getTitle(name: string, outputDir?: string): string {
 function formatDateTime(date: Date): string {
   // 使用 padStart(2, '0') 确保单数位数字补零（如 9 → 09）
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0'); // 月份从0开始需+1
-  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, "0"); // 月份从0开始需+1
+  const day = String(date.getDate()).padStart(2, "0");
 
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  const seconds = String(date.getSeconds()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const seconds = String(date.getSeconds()).padStart(2, "0");
 
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`; // 组合成目标格式
 }
@@ -163,7 +161,7 @@ function getIndexDir(outputDir: string): string {
   let dirName = path.basename(outputDir);
 
   // 处理目录名，去除前缀序号(例如: 04-测试 -> 测试)
-  dirName = dirName.replace(/^\d+-/, '');
+  dirName = dirName.replace(/^\d+-/, "");
 
   return dirName;
 }
@@ -178,18 +176,18 @@ function getIndexPath(outputDir: string): string {
   let dirName = path.basename(outputDir);
 
   // 处理目录名，去除前缀序号(例如: 04-测试 -> 测试)
-  dirName = dirName.replace(/^\d+-/, '');
+  dirName = dirName.replace(/^\d+-/, "");
 
   // 解析绝对路径
   const absolutePath = path.resolve(outputDir);
 
   // 检查路径中是否含有'sdoc'目录
-  const sdocIndex = absolutePath.indexOf('sdoc');
+  const sdocIndex = absolutePath.indexOf("sdoc");
   if (sdocIndex !== -1) {
     // 如果含有'sdoc'目录，则从这一级开始截断
     const sdocPath = absolutePath.substring(sdocIndex);
     // 将反斜杠替换为正斜杠
-    return sdocPath.replace(/\\/g, '/');
+    return sdocPath.replace(/\\/g, "/");
   } else {
     // 若不含sdoc，则使用最后的目录名作为path
     return dirName;
@@ -248,7 +246,7 @@ function generateIndexContent(
   useduuid: string
 ): string {
   return template
-    .replace(/{{ title }}/g, getTitle('', outputDir)) // 传递空字符串作为name参数，因为getTitle会根据outputDir处理index模板的标题
+    .replace(/{{ title }}/g, getTitle("", outputDir)) // 传递空字符串作为name参数，因为getTitle会根据outputDir处理index模板的标题
     .replace(/{{ date }}/g, formatDateTime(date))
     .replace(/{{ permalink }}/g, permalink)
     .replace(/{{ path }}/g, getIndexPath(outputDir))
@@ -282,55 +280,55 @@ async function processPathWithMap(outputDir: string, mapFile?: string): Promise<
   try {
     // 获取输出目录的绝对路径
     const absoluteOutputDir = path.resolve(outputDir);
-    
+
     // 检查路径中是否含有sdoc目录
     const sdocIndex = absoluteOutputDir.indexOf(SDOC_DIR_NAME);
     if (sdocIndex === -1) {
       console.error(`❌ 输出目录中不包含'${SDOC_DIR_NAME}': ${absoluteOutputDir}`);
       return null;
     }
-    
+
     // 确定映射文件路径
     let pathMapPath: string;
     if (mapFile) {
       // 如果提供了映射文件路径
-      pathMapPath = path.isAbsolute(mapFile)
-        ? mapFile
-        : path.join(process.cwd(), mapFile);
+      pathMapPath = path.isAbsolute(mapFile) ? mapFile : path.join(process.cwd(), mapFile);
     } else {
       // 如果没有提供映射文件路径，使用默认路径
       // 从sdoc开始截断路径
       const sdocPath = absoluteOutputDir.substring(0, sdocIndex + SDOC_DIR_NAME.length);
       // 默认映射文件路径 (只支持.js类型)
-      pathMapPath = path.join(sdocPath, 'path-map.js');
+      pathMapPath = path.join(sdocPath, "path-map.js");
     }
-    
+
     // 检查映射文件是否存在
     if (!fs.existsSync(pathMapPath)) {
       console.error(`❌ 路径映射文件不存在: ${pathMapPath}`);
-      console.error(`💡 提示: 使用 'tdoc m:m -d path' 命令生成路径映射文件, path 需要包含 ${SDOC_DIR_NAME}, 都是以${SDOC_DIR_NAME}为基础路劲`);
+      console.error(
+        `💡 提示: 使用 'tdoc m:m -d path' 命令生成路径映射文件, path 需要包含 ${SDOC_DIR_NAME}, 都是以${SDOC_DIR_NAME}为基础路劲`
+      );
       return null;
     }
-    
+
     // 读取并解析映射文件 (只支持.js类型)
     let pathMap: Record<string, string>;
-    if (!pathMapPath.endsWith('.js')) {
-        console.error(`❌ 映射文件必须是.js类型: ${pathMapPath}`);
-        return null;
+    if (!pathMapPath.endsWith(".js")) {
+      console.error(`❌ 映射文件必须是.js类型: ${pathMapPath}`);
+      return null;
     }
-    
+
     // 使用require导入JS文件
     let loadedMap = require(pathMapPath);
     // 处理ES6模块的default导出
     pathMap = loadedMap.default || loadedMap;
-    
+
     // 从sdoc开始截断路径
     const sdocPath = absoluteOutputDir.substring(sdocIndex);
-    
+
     // 分割路径为各个部分并进行映射
     const pathParts = sdocPath.split(path.sep);
     const mappedParts: string[] = [];
-    
+
     for (const part of pathParts) {
       if (part === SDOC_DIR_NAME) {
         // 直接添加sdoc
@@ -344,9 +342,9 @@ async function processPathWithMap(outputDir: string, mapFile?: string): Promise<
         return null;
       }
     }
-    
+
     // 返回映射后的路径
-    return mappedParts.join('/');
+    return mappedParts.join("/");
   } catch (err) {
     console.error(`❌ 处理路径映射时出错: ${(err as Error).message}`);
     return null;

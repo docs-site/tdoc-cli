@@ -2,14 +2,14 @@
 const { defineConfig } = require("cz-git");
 
 module.exports = defineConfig({
-  ignores: [commit => commit.includes("init")],
+  ignores: [(commit) => commit.includes("init")],
   extends: ["@commitlint/config-conventional"],
   rules: {
     "type-enum": [
       2,
       "always",
-      ["feat", "fix", "docs", "style", "refactor", "perf", "test", "build", "ci", "revert", "chore"],
-    ],
+      ["feat", "fix", "docs", "style", "refactor", "perf", "test", "build", "ci", "revert", "chore"]
+    ]
   },
   prompt: {
     messages: {
@@ -22,7 +22,7 @@ module.exports = defineConfig({
       footerPrefixesSelect: "选择关联 Issue 前缀（可选）: ",
       customFooterPrefix: "输入自定义 Issue 前缀: ",
       footer: "列举关联 Issue (可选) 例如: #31, #I3244:\n",
-      confirmCommit: "是否提交或修改 commit ?",
+      confirmCommit: "是否提交或修改 commit ?"
     },
     types: [
       { value: "feat", name: "feat:     🚀  新增功能 | A new feature", emoji: "🚀" },
@@ -31,31 +31,31 @@ module.exports = defineConfig({
       {
         value: "style",
         name: "style:    🎨  代码格式 | Changes that do not affect the meaning of the code",
-        emoji: "🎨",
+        emoji: "🎨"
       },
       {
         value: "refactor",
         name: "refactor: ♻️   代码重构 | A code change that neither fixes a bug nor adds a feature",
-        emoji: "♻️",
+        emoji: "♻️"
       },
       { value: "perf", name: "perf:     ⚡️  性能优化 | A code change that improves performance", emoji: "⚡️" },
       {
         value: "test",
         name: "test:     ✅  测试相关 | Adding missing tests or correcting existing tests",
-        emoji: "✅",
+        emoji: "✅"
       },
       {
         value: "build",
         name: "build:    📦️  构建相关 | Changes that affect the build system or external dependencies",
-        emoji: "📦️",
+        emoji: "📦️"
       },
       { value: "ci", name: "ci:       🎡  持续集成 | Changes to our CI configuration files and scripts", emoji: "🎡" },
       { value: "revert", name: "revert:   ⏪️  回退代码 | Revert to a commit", emoji: "⏪️" },
       {
         value: "chore",
         name: "chore:    🔨  其他修改 | Other changes that do not modify src or test files",
-        emoji: "🔨",
-      },
+        emoji: "🔨"
+      }
     ],
     useEmoji: true,
     emojiAlign: "center",
@@ -85,6 +85,6 @@ module.exports = defineConfig({
     defaultBody: "",
     defaultIssues: "",
     defaultScope: "",
-    defaultSubject: "",
-  },
+    defaultSubject: ""
+  }
 });

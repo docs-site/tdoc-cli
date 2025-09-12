@@ -2,12 +2,12 @@ name: Release Page Creator
 
 on:
   workflow_run:
-    workflows: ['Publish Package to npmjs']
+    workflows: ["Publish Package to npmjs"]
     types: [completed]
   workflow_dispatch:
     inputs:
       tag_name:
-        description: '标签名 (例如 v1.0.0)'
+        description: "标签名 (例如 v1.0.0)"
         required: false
 
 jobs:
@@ -31,8 +31,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
-          cache: 'npm'
+          node-version: "20.x"
+          cache: "npm"
 
       # 步骤 3: 生成北京时间 (UTC+8)
       - name: 获取当前北京时间

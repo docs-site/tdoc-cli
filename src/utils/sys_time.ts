@@ -17,12 +17,12 @@ export function getCurrentDateTime(): string {
 
   // 使用 padStart(2, '0') 确保单数位数字补零（如 9 → 09）
   const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0'); // 月份从0开始需+1
-  const day = String(now.getDate()).padStart(2, '0');
+  const month = String(now.getMonth() + 1).padStart(2, "0"); // 月份从0开始需+1
+  const day = String(now.getDate()).padStart(2, "0");
 
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  const seconds = String(now.getSeconds()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, "0");
+  const minutes = String(now.getMinutes()).padStart(2, "0");
+  const seconds = String(now.getSeconds()).padStart(2, "0");
 
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`; // 组合成目标格式
 }

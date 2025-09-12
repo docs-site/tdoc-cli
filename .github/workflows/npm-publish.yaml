@@ -7,7 +7,7 @@ on:
     branches:
       - master # 仅在 master 分支的推送时触发
     tags:
-      - 'v*' # 避免标签推送循环触发
+      - "v*" # 避免标签推送循环触发
   workflow_dispatch: # 允许从 GitHub Actions 页面手动触发
 
 jobs:
@@ -37,9 +37,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x' # 使用最新的 LTS 版本
-          registry-url: 'https://registry.npmjs.org' # 设置 npm 注册表
-          cache: 'npm' # 缓存 npm 依赖提升后续运行速度
+          node-version: "20.x" # 使用最新的 LTS 版本
+          registry-url: "https://registry.npmjs.org" # 设置 npm 注册表
+          cache: "npm" # 缓存 npm 依赖提升后续运行速度
 
       # 步骤 3: 更新 npm 到最新版本
       - name: Update npm

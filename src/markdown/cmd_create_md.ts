@@ -8,9 +8,9 @@
  * ======================================================
  */
 
-import fs from 'fs';
-import path from 'path';
-import readline from 'readline';
+import fs from "fs";
+import path from "path";
+import readline from "readline";
 import {
   generatePermalink as generatePermalinkHelper,
   readTemplate,
@@ -18,8 +18,8 @@ import {
   generateContent,
   generateIndexContent,
   processPathWithMap
-} from './helper';
-import type { CommandOptions } from "./types"
+} from "./helper";
+import type { CommandOptions } from "./types";
 
 /**
  * @brief 确认是否覆盖已存在的文件
@@ -36,7 +36,7 @@ async function confirmOverwrite(filePath: string): Promise<boolean> {
   try {
     return await new Promise((resolve) => {
       rl.question(`⚠️  文件已存在: ${filePath} 是否覆盖? (y/N) `, (answer) => {
-        resolve(answer.trim().toLowerCase() === 'y');
+        resolve(answer.trim().toLowerCase() === "y");
       });
     });
   } finally {
@@ -60,28 +60,19 @@ async function confirmOverwrite(filePath: string): Promise<boolean> {
  * 6. 处理文件存在的情况
  * 7. 创建/覆盖文件
  */
-async function createMarkdownFile(
-  fileName: string,
-  options: CommandOptions = {}
-): Promise<void> {
+async function createMarkdownFile(fileName: string, options: CommandOptions = {}): Promise<void> {
   // 1. 确定模板路径
   // 检查是否为index文件名，如果是则使用index.md模板
-  const templateName = fileName.toLowerCase() === 'index' ? 'index' : (options.template || 'post');
-  const templatePath = path.join(
-    path.join(__dirname, '../../'),
-    'scaffolds',
-    `${templateName}.md`
-  );
+  const templateName = fileName.toLowerCase() === "index" ? "index" : options.template || "post";
+  const templatePath = path.join(path.join(__dirname, "../../"), "scaffolds", `${templateName}.md`);
   try {
     const template = readTemplate(templatePath); // 2. 读取模板内容
     // 4. 确定输出目录和路径
-    const outputDir = options.dir
-      ? path.join(process.cwd(), options.dir)
-      : path.join(process.cwd(), 'test');
+    const outputDir = options.dir ? path.join(process.cwd(), options.dir) : path.join(process.cwd(), "test");
     // 3. 生成文件内容
     // 获取当前时间（包括毫秒）用于统一时间源
     const currentTime = new Date();
-    
+
     // 处理路径映射
     let customPermalinkPrefix: string | null = null;
     if (options.map !== undefined) {
@@ -89,28 +80,45 @@ async function createMarkdownFile(
       const mapFilePath = options.map === true ? undefined : (options.map as string);
       const mappedPath = await processPathWithMap(outputDir, mapFilePath);
       if (mappedPath === null) {
-        console.error('❌ 路径映射失败，无法创建文档');
+        console.error("❌ 路径映射失败，无法创建文档");
         process.exit(1);
       }
       customPermalinkPrefix = mappedPath;
     }
-    
+
     // 生成permalink和UUID信息用于后续打印
     // 在映射模式下不使用默认前缀
     const usePrefix = options.map === undefined;
     const permalinkData = generatePermalinkHelper(currentTime, usePrefix);
-    
+
     // 如果有自定义的permalink前缀，则修改permalink
     if (customPermalinkPrefix) {
       permalinkData.permalink = `/${customPermalinkPrefix}${permalinkData.permalink}`;
     }
 
     // 生成详细时间戳（中国时区格式，包含毫秒）
-    const detailDate = `${formatDateTime(currentTime)}.${String(currentTime.getMilliseconds()).padStart(3, '0')}`;
+    const detailDate = `${formatDateTime(currentTime)}.${String(currentTime.getMilliseconds()).padStart(3, "0")}`;
 
-    const content = fileName.toLowerCase() === 'index'
-      ? generateIndexContent(template, outputDir, currentTime, permalinkData.permalink, detailDate, permalinkData.fulluuid, permalinkData.useduuid)
-      : generateContent(template, fileName, currentTime, permalinkData.permalink, detailDate, permalinkData.fulluuid, permalinkData.useduuid);
+    const content =
+      fileName.toLowerCase() === "index"
+        ? generateIndexContent(
+            template,
+            outputDir,
+            currentTime,
+            permalinkData.permalink,
+            detailDate,
+            permalinkData.fulluuid,
+            permalinkData.useduuid
+          )
+        : generateContent(
+            template,
+            fileName,
+            currentTime,
+            permalinkData.permalink,
+            detailDate,
+            permalinkData.fulluuid,
+            permalinkData.useduuid
+          );
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
       console.log(`📁 创建目录: ${outputDir}`);
@@ -126,17 +134,19 @@ async function createMarkdownFile(
         } else {
           const overwrite = await confirmOverwrite(outputPath);
           if (!overwrite) {
-            console.log('🚫 操作已取消');
+            console.log("🚫 操作已取消");
             return;
           }
         }
       }
       // 7. 创建/覆盖文件
-      fs.writeFileSync(outputPath, content, 'utf8');
+      fs.writeFileSync(outputPath, content, "utf8");
       console.log(`✅ 文档已生成: ${outputPath}`);
       console.log(`📋 使用模板: ${path.relative(process.cwd(), templatePath)}`);
       // 打印详细的时间信息（包括毫秒）和permalink
-      console.log(`⏰ 生成时间: ${formatDateTime(currentTime)}.${String(currentTime.getMilliseconds()).padStart(3, '0')}`);
+      console.log(
+        `⏰ 生成时间: ${formatDateTime(currentTime)}.${String(currentTime.getMilliseconds()).padStart(3, "0")}`
+      );
       console.log(`🔗 永久链接: ${permalinkData.permalink}`);
     } catch (err) {
       throw new Error(`文件创建失败: ${outputPath}\n${(err as Error).message}`);

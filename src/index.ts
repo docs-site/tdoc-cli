@@ -8,17 +8,16 @@
  * ======================================================
  */
 
-
-import { Command } from 'commander';
-import pkg from '../package.json';
-import { main as processImages } from './cmd/cmd_img';
-import gitSubmoduleCommand from './cmd/cmd_git_submodule';
-import { registerTreeCommand } from './system/tree';
-import loginCommand from './inquirer-cmd/login';
-import { cmdInit } from './inquirer-cmd/init';
-import sidebarCommand from './cmd/cmd_sidebar';
-import { registerMarkdownCommands } from './markdown';
-import mistCommand from './mist/mist-cli';
+import { Command } from "commander";
+import pkg from "../package.json";
+import { main as processImages } from "./cmd/cmd_img";
+import gitSubmoduleCommand from "./cmd/cmd_git_submodule";
+import { registerTreeCommand } from "./system/tree";
+import loginCommand from "./inquirer-cmd/login";
+import { cmdInit } from "./inquirer-cmd/init";
+import sidebarCommand from "./cmd/cmd_sidebar";
+import { registerMarkdownCommands } from "./markdown";
+import mistCommand from "./mist/mist-cli";
 /**
  * @brief 创建commander的Command实例
  */
@@ -49,38 +48,38 @@ const program = new Command(pkg.name);
 function getVersionInfo(): string {
   const deps = Object.entries(pkg.dependencies)
     .map(([name, version]) => `  ${name}: ${version}`)
-    .join('\n');
+    .join("\n");
   const devDeps = Object.entries(pkg.devDependencies)
     .map(([name, version]) => `  ${name}: ${version}`)
-    .join('\n');
+    .join("\n");
   return `${pkg.name}: ${pkg.version}\n\ndependencies:\n${deps}\n\ndevDependencies:\n${devDeps}`;
 }
 
-program.version(getVersionInfo(), '-v, --version', '显示版本信息和依赖包');
+program.version(getVersionInfo(), "-v, --version", "显示版本信息和依赖包");
 
 // 添加处理图片路径的命令
 program
-  .command('img [path]')
-  .description('处理markdown文件中的图片路径')
-  .option('-d, --dir', '处理目录中git修改/新增的markdown文件')
-  .option('-t, --transform', '转换图片路径为OSS绝对路径')
-  .option('--debug', '显示详细处理信息')
+  .command("img [path]")
+  .description("处理markdown文件中的图片路径")
+  .option("-d, --dir", "处理目录中git修改/新增的markdown文件")
+  .option("-t, --transform", "转换图片路径为OSS绝对路径")
+  .option("--debug", "显示详细处理信息")
   .action(async (path, options) => {
     try {
       const args = [];
       if (options.dir) {
-        args.push('-d');
+        args.push("-d");
       }
       if (options.transform) {
-        args.push('-t');
+        args.push("-t");
       }
       args.push(path);
       if (options.debug) {
-        args.push('--debug');
+        args.push("--debug");
       }
       await processImages(args);
     } catch (err) {
-      console.error('❌ 处理图片路径失败:', (err as Error).message);
+      console.error("❌ 处理图片路径失败:", (err as Error).message);
       process.exit(1);
     }
   });
@@ -93,30 +92,30 @@ program
     try {
       gitSubmoduleCommand.handler(dir);
     } catch (err) {
-      console.error('❌ 处理子模块失败:', (err as Error).message);
+      console.error("❌ 处理子模块失败:", (err as Error).message);
       process.exit(1);
     }
   });
 
 // 登录命令
 program
-  .command('login')
-  .description('用户登录')
+  .command("login")
+  .description("用户登录")
   .action(async () => {
     await loginCommand();
   });
 
 // 初始化项目命令
 program
-  .command('init [dirName]')
-  .description('Initialize a new tdoc project')
-  .option('-y, --yes', 'Skip prompts and use default values')
-  .option('--scope <scope>', 'Set npm package scope (e.g. myorg)')
+  .command("init [dirName]")
+  .description("Initialize a new tdoc project")
+  .option("-y, --yes", "Skip prompts and use default values")
+  .option("--scope <scope>", "Set npm package scope (e.g. myorg)")
   .action(async (dirName, options) => {
     try {
       await cmdInit(dirName, false, options.yes, options.scope);
     } catch (err) {
-      console.error('❌ 初始化项目失败:', (err as Error).message);
+      console.error("❌ 初始化项目失败:", (err as Error).message);
       process.exit(1);
     }
   });

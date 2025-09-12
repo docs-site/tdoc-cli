@@ -1,11 +1,11 @@
 // 导入必要的模块
-import { input, confirm, select } from '@inquirer/prompts';
-import fs from 'fs-extra';
-import path from 'path';
-import { execSync } from 'child_process';
+import { input, confirm, select } from "@inquirer/prompts";
+import fs from "fs-extra";
+import path from "path";
+import { execSync } from "child_process";
 
 // 定义默认依赖项
-let devDependencies: string[] = ['@types/node'];
+let devDependencies: string[] = ["@types/node"];
 let dependencies: string[] = [];
 
 /**
@@ -16,7 +16,7 @@ let dependencies: string[] = [];
  */
 function createProjectDir(dirName?: string): string {
   // 解析项目绝对路径，如果没有指定目录名则使用当前目录
-  const projectDir = path.resolve(dirName || '');
+  const projectDir = path.resolve(dirName || "");
 
   // 检查目录是否已存在
   if (fs.existsSync(projectDir)) {
@@ -51,67 +51,65 @@ async function collectUserInput(dirName?: string, yes = false, scope?: string) {
     name: yes
       ? dirName
         ? path.basename(dirName)
-        : 'my-project'
+        : "my-project"
       : await input({
-          message: 'Project name:',
+          message: "Project name:",
           default: dirName ? path.basename(dirName) : undefined,
-          validate: (input: string) =>
-            input.trim() !== '' || 'Project name is required'
+          validate: (input: string) => input.trim() !== "" || "Project name is required"
         }),
     description: yes
-      ? ''
+      ? ""
       : await input({
-          message: 'Project description:',
-          default: ''
+          message: "Project description:",
+          default: ""
         }),
     author: yes
-      ? ''
+      ? ""
       : await input({
-          message: 'Author:',
-          default: ''
+          message: "Author:",
+          default: ""
         }),
     license: yes
-      ? 'MIT'
+      ? "MIT"
       : await select({
-          message: 'License:',
+          message: "License:",
           choices: [
-            { value: 'MIT' },
-            { value: 'Apache-2.0' },
-            { value: 'GPL-3.0' },
-            { value: 'ISC' },
-            { value: 'Unlicense' }
+            { value: "MIT" },
+            { value: "Apache-2.0" },
+            { value: "GPL-3.0" },
+            { value: "ISC" },
+            { value: "Unlicense" }
           ],
-          default: 'MIT'
+          default: "MIT"
         }),
     initGit: yes
       ? true
       : await confirm({
-          message: 'Initialize git repository?',
+          message: "Initialize git repository?",
           default: true
         }),
     addWorkflow: yes
       ? true
       : await confirm({
-          message: 'Add GitHub Actions workflow for auto-publish?',
+          message: "Add GitHub Actions workflow for auto-publish?",
           default: true
         }),
     addEditorConfig: yes
       ? true
       : await confirm({
-          message: 'Add .editorconfig configuration file?',
+          message: "Add .editorconfig configuration file?",
           default: true
         }),
     addVscodeConfig: yes
       ? true
       : await confirm({
-          message: 'Add .vscode project configuration?',
+          message: "Add .vscode project configuration?",
           default: true
         }),
     addPrettierConfig: yes
       ? true
       : await confirm({
-          message:
-            'Add Prettier configuration (will install prettier package)?',
+          message: "Add Prettier configuration (will install prettier package)?",
           default: true
         }),
     installDeps: yes ? false : await confirmDependencies()
@@ -126,12 +124,12 @@ async function confirmDependencies() {
   const showDevDeps = [...devDependencies];
   const showDeps = [...dependencies];
 
-  console.log('\nWill install the following basic common dependencies:');
-  console.log(`  devDependencies: ${showDevDeps.join(', ')}`);
-  console.log(`  dependencies: ${showDeps.join(', ') || 'none'}`);
+  console.log("\nWill install the following basic common dependencies:");
+  console.log(`  devDependencies: ${showDevDeps.join(", ")}`);
+  console.log(`  dependencies: ${showDeps.join(", ") || "none"}`);
   console.log();
   return await confirm({
-    message: 'Install dependencies automatically?',
+    message: "Install dependencies automatically?",
     default: false
   });
 }
@@ -145,30 +143,27 @@ async function confirmDependencies() {
 function initGitRepo(projectDir: string, addWorkflow: boolean) {
   try {
     // 初始化Git仓库，使用pipe模式隐藏git命令输出
-    execSync('git init', { stdio: 'pipe' });
-    console.log('✅ Git repository initialized');
+    execSync("git init", { stdio: "pipe" });
+    console.log("✅ Git repository initialized");
 
     // 创建.gitignore文件，忽略常见不需要版本控制的文件
-    fs.writeFileSync(
-      path.join(projectDir, '.gitignore'),
-      'node_modules/\n.DS_Store\n.env\n'
-    );
+    fs.writeFileSync(path.join(projectDir, ".gitignore"), "node_modules/\n.DS_Store\n.env\n");
 
     // 如果需要添加GitHub工作流
     if (addWorkflow) {
-      const workflowsDir = path.join(__dirname, '../../.github/workflows');
+      const workflowsDir = path.join(__dirname, "../../.github/workflows");
       if (fs.existsSync(workflowsDir)) {
         // 创建工作流目录并复制模板文件
-        const destDir = path.join(projectDir, '.github/workflows');
+        const destDir = path.join(projectDir, ".github/workflows");
         fs.ensureDirSync(destDir);
         fs.copySync(workflowsDir, destDir);
-        console.log('✅ GitHub Actions workflow files copied');
+        console.log("✅ GitHub Actions workflow files copied");
       } else {
-        console.log('ℹ️ No workflow files found in .github/workflows');
+        console.log("ℹ️ No workflow files found in .github/workflows");
       }
     }
   } catch (err) {
-    console.error('Failed to initialize git repository:', err);
+    console.error("Failed to initialize git repository:", err);
   }
 }
 
@@ -180,58 +175,52 @@ function initGitRepo(projectDir: string, addWorkflow: boolean) {
 function copyTemplateFiles(projectDir: string, answers: any) {
   // 处理README文件：
   // 1. 尝试从模板目录读取README模板
-  const readmeTemplatePath = path.join(
-    __dirname,
-    '../../npm-template/README.md'
-  );
+  const readmeTemplatePath = path.join(__dirname, "../../npm-template/README.md");
   if (fs.existsSync(readmeTemplatePath)) {
     // 读取模板内容并替换占位符
-    let readmeContent = fs.readFileSync(readmeTemplatePath, 'utf8');
+    let readmeContent = fs.readFileSync(readmeTemplatePath, "utf8");
     readmeContent = readmeContent.replace(/\{\{\s*title\s*\}\}/g, answers.name);
-    fs.writeFileSync(path.join(projectDir, 'README.md'), readmeContent);
+    fs.writeFileSync(path.join(projectDir, "README.md"), readmeContent);
   } else {
     // 模板不存在时创建基础README
     fs.writeFileSync(
-      path.join(projectDir, 'README.md'),
-      `# ${answers.name}\n\n${answers.description || 'Project description'}`
+      path.join(projectDir, "README.md"),
+      `# ${answers.name}\n\n${answers.description || "Project description"}`
     );
   }
 
   // 复制.editorconfig
   if (answers.addEditorConfig) {
-    const editorConfigPath = path.join(__dirname, '../../.editorconfig');
+    const editorConfigPath = path.join(__dirname, "../../.editorconfig");
     if (fs.existsSync(editorConfigPath)) {
-      fs.copyFileSync(editorConfigPath, path.join(projectDir, '.editorconfig'));
-      console.log('✅ .editorconfig copied');
+      fs.copyFileSync(editorConfigPath, path.join(projectDir, ".editorconfig"));
+      console.log("✅ .editorconfig copied");
     }
   }
 
   // 复制.vscode配置
   if (answers.addVscodeConfig) {
-    const vscodePath = path.join(__dirname, '../../.vscode');
+    const vscodePath = path.join(__dirname, "../../.vscode");
     if (fs.existsSync(vscodePath)) {
-      fs.copySync(vscodePath, path.join(projectDir, '.vscode'));
-      console.log('✅ .vscode configuration copied');
+      fs.copySync(vscodePath, path.join(projectDir, ".vscode"));
+      console.log("✅ .vscode configuration copied");
     }
   }
 
   // 复制Prettier配置
   if (answers.addPrettierConfig) {
-    const prettierRcPath = path.join(__dirname, '../../.prettierrc');
-    const prettierIgnorePath = path.join(__dirname, '../../.prettierignore');
+    const prettierRcPath = path.join(__dirname, "../../.prettierrc");
+    const prettierIgnorePath = path.join(__dirname, "../../.prettierignore");
 
     if (fs.existsSync(prettierRcPath)) {
-      fs.copyFileSync(prettierRcPath, path.join(projectDir, '.prettierrc'));
-      console.log('✅ .prettierrc copied');
+      fs.copyFileSync(prettierRcPath, path.join(projectDir, ".prettierrc"));
+      console.log("✅ .prettierrc copied");
     }
     if (fs.existsSync(prettierIgnorePath)) {
-      fs.copyFileSync(
-        prettierIgnorePath,
-        path.join(projectDir, '.prettierignore')
-      );
-      console.log('✅ .prettierignore copied');
+      fs.copyFileSync(prettierIgnorePath, path.join(projectDir, ".prettierignore"));
+      console.log("✅ .prettierignore copied");
     }
-    devDependencies.push('prettier');
+    devDependencies.push("prettier");
   }
 }
 
@@ -246,18 +235,18 @@ function createPackageJson(projectDir: string, answers: any, scope?: string) {
   const packageJson = {
     // 处理包名：如果有作用域则添加作用域前缀
     name: scope
-      ? `@${scope}/${answers.name.toLowerCase().replace(/\s+/g, '-')}`
-      : answers.name.toLowerCase().replace(/\s+/g, '-'),
-    version: '1.0.0', // 默认版本号
+      ? `@${scope}/${answers.name.toLowerCase().replace(/\s+/g, "-")}`
+      : answers.name.toLowerCase().replace(/\s+/g, "-"),
+    version: "1.0.0", // 默认版本号
     description: answers.description,
-    main: 'index.js', // 默认入口文件
+    main: "index.js", // 默认入口文件
     scripts: {
       test: 'echo "Error: no test specified" && exit 1', // 默认测试脚本
       // 如果配置了Prettier，添加格式化脚本
       ...(answers.addPrettierConfig
         ? {
-            'format:check': 'prettier . --check',
-            'format:fix': 'prettier . --write'
+            "format:check": "prettier . --check",
+            "format:fix": "prettier . --write"
           }
         : {})
     },
@@ -266,10 +255,7 @@ function createPackageJson(projectDir: string, answers: any, scope?: string) {
   };
 
   // 将package.json写入文件，使用2个空格缩进
-  fs.writeFileSync(
-    path.join(projectDir, 'package.json'),
-    JSON.stringify(packageJson, null, 2)
-  );
+  fs.writeFileSync(path.join(projectDir, "package.json"), JSON.stringify(packageJson, null, 2));
 }
 
 /**
@@ -279,7 +265,7 @@ function createPackageJson(projectDir: string, answers: any, scope?: string) {
  */
 function installDependencies(projectDir: string) {
   try {
-    console.log('Installing dependencies...');
+    console.log("Installing dependencies...");
 
     // 准备要安装的依赖列表
     const installDevDeps = [...devDependencies]; // 开发依赖
@@ -287,21 +273,21 @@ function installDependencies(projectDir: string) {
 
     // 安装开发依赖
     if (installDevDeps.length) {
-      console.log(`  devDependencies: ${installDevDeps.join(', ')}`);
+      console.log(`  devDependencies: ${installDevDeps.join(", ")}`);
       // 使用npm install -D安装开发依赖
-      execSync(`npm install ${installDevDeps.join(' ')} -D`, {
-        stdio: 'inherit'
+      execSync(`npm install ${installDevDeps.join(" ")} -D`, {
+        stdio: "inherit"
       });
     }
 
     // 安装生产依赖
     if (installDeps.length) {
-      console.log(`  dependencies: ${installDeps.join(', ')}`);
+      console.log(`  dependencies: ${installDeps.join(", ")}`);
       // 使用npm install安装生产依赖
-      execSync(`npm install ${installDeps.join(' ')}`, { stdio: 'inherit' });
+      execSync(`npm install ${installDeps.join(" ")}`, { stdio: "inherit" });
     }
   } catch (err) {
-    console.error('Failed to install dependencies:', err);
+    console.error("Failed to install dependencies:", err);
   }
 }
 
@@ -313,13 +299,8 @@ function installDependencies(projectDir: string) {
  * @param {string} [scope] - 可选的npm包作用域
  * @returns {Promise<void>}
  */
-export async function cmdInit(
-  dirName?: string,
-  skipPrompts = false,
-  yes = false,
-  scope?: string
-) {
-  console.log('Welcome to tdoc project initialization\n');
+export async function cmdInit(dirName?: string, skipPrompts = false, yes = false, scope?: string) {
+  console.log("Welcome to tdoc project initialization\n");
 
   // 创建项目目录
   const projectDir = createProjectDir(dirName);

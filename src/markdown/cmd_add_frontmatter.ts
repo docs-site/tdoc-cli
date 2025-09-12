@@ -7,8 +7,8 @@
  * Description: 为markdown文件添加frontmatter
  * ======================================================
  */
-import fs from 'fs';
-import path from 'path';
+import fs from "fs";
+import path from "path";
 import {
   generatePermalink,
   readTemplate,
@@ -16,7 +16,7 @@ import {
   generateContent,
   generateIndexContent,
   processPathWithMap
-} from './helper';
+} from "./helper";
 
 /**
  * @brief 检测markdown文件是否包含frontmatter
@@ -25,7 +25,7 @@ import {
  */
 function hasFrontmatter(content: string): boolean {
   // 检查文件是否以frontmatter开始 (---开头和结尾)
-  return content.trimStart().startsWith('---');
+  return content.trimStart().startsWith("---");
 }
 
 /**
@@ -43,27 +43,23 @@ function hasFrontmatter(content: string): boolean {
  */
 async function generateFrontmatter(filePath: string, mapFile?: string | boolean): Promise<string> {
   // 获取文件名（不带扩展名）
-  const fileName = path.basename(filePath, '.md');
-  
+  const fileName = path.basename(filePath, ".md");
+
   // 确定模板名称
-  const templateName = fileName.toLowerCase() === 'index' ? 'index' : 'post';
-  
+  const templateName = fileName.toLowerCase() === "index" ? "index" : "post";
+
   // 1. 确定模板路径
-  const templatePath = path.join(
-    path.join(__dirname, '../../'),
-    'scaffolds',
-    `${templateName}.md`
-  );
-  
+  const templatePath = path.join(path.join(__dirname, "../../"), "scaffolds", `${templateName}.md`);
+
   const template = readTemplate(templatePath); // 2. 读取模板内容
-  
+
   // 3. 生成文件内容
   // 获取当前时间（包括毫秒）用于统一时间源
   const currentTime = new Date();
-  
+
   // 获取文件所在目录
   const outputDir = path.dirname(filePath);
-  
+
   // 处理路径映射
   let customPermalinkPrefix: string | null = null;
   if (mapFile !== undefined) {
@@ -71,37 +67,54 @@ async function generateFrontmatter(filePath: string, mapFile?: string | boolean)
     const mapFilePath = mapFile === true ? undefined : (mapFile as string);
     const mappedPath = await processPathWithMap(outputDir, mapFilePath);
     if (mappedPath === null) {
-      console.error('❌ 路径映射失败，无法添加frontmatter');
+      console.error("❌ 路径映射失败，无法添加frontmatter");
       process.exit(1);
     }
     customPermalinkPrefix = mappedPath;
   }
-  
+
   // 生成permalink和UUID信息用于后续打印
   // 在映射模式下不使用默认前缀
   const usePrefix = mapFile === undefined;
   const permalinkData = generatePermalink(currentTime, usePrefix);
-  
+
   // 如果有自定义的permalink前缀，则修改permalink
   if (customPermalinkPrefix) {
     permalinkData.permalink = `/${customPermalinkPrefix}${permalinkData.permalink}`;
   }
-  
+
   // 生成详细时间戳（中国时区格式，包含毫秒）
-  const detailDate = `${formatDateTime(currentTime)}.${String(currentTime.getMilliseconds()).padStart(3, '0')}`;
-  
-  const content = fileName.toLowerCase() === 'index'
-    ? generateIndexContent(template, outputDir, currentTime, permalinkData.permalink, detailDate, permalinkData.fulluuid, permalinkData.useduuid)
-    : generateContent(template, fileName, currentTime, permalinkData.permalink, detailDate, permalinkData.fulluuid, permalinkData.useduuid);
-  
+  const detailDate = `${formatDateTime(currentTime)}.${String(currentTime.getMilliseconds()).padStart(3, "0")}`;
+
+  const content =
+    fileName.toLowerCase() === "index"
+      ? generateIndexContent(
+          template,
+          outputDir,
+          currentTime,
+          permalinkData.permalink,
+          detailDate,
+          permalinkData.fulluuid,
+          permalinkData.useduuid
+        )
+      : generateContent(
+          template,
+          fileName,
+          currentTime,
+          permalinkData.permalink,
+          detailDate,
+          permalinkData.fulluuid,
+          permalinkData.useduuid
+        );
+
   // 提取frontmatter部分（从---到下一个---之间的内容）
   const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
   if (frontmatterMatch && frontmatterMatch[1]) {
-    return '---\n' + frontmatterMatch[1] + '\n---';
+    return "---\n" + frontmatterMatch[1] + "\n---";
   }
-  
+
   // 如果没有找到frontmatter，返回空字符串
-  return '';
+  return "";
 }
 
 /**
@@ -113,22 +126,22 @@ async function generateFrontmatter(filePath: string, mapFile?: string | boolean)
 function addFrontmatterToFile(filePath: string, frontmatter: string): void {
   try {
     // 读取原文件内容
-    const content = fs.readFileSync(filePath, 'utf8');
-    
+    const content = fs.readFileSync(filePath, "utf8");
+
     // 检查是否已包含frontmatter
     if (hasFrontmatter(content)) {
       console.log(`⚠️  文件已包含frontmatter: ${filePath}`);
       return;
     }
-    
+
     // 将frontmatter和原内容合并，并在最后添加一个空行
-    const newContent = frontmatter + '\n\n' + content;
-    
+    const newContent = frontmatter + "\n\n" + content;
+
     // 确保使用LF作为换行符
-    const normalizedContent = newContent.replace(/\r\n/g, '\n');
-    
+    const normalizedContent = newContent.replace(/\r\n/g, "\n");
+
     // 写入文件
-    fs.writeFileSync(filePath, normalizedContent, 'utf8');
+    fs.writeFileSync(filePath, normalizedContent, "utf8");
     console.log(`✅ frontmatter已添加到文件: ${filePath}`);
   } catch (err) {
     throw new Error(`文件处理失败: ${filePath}\n${(err as Error).message}`);
@@ -145,14 +158,17 @@ function addFrontmatterToFile(filePath: string, frontmatter: string): void {
  * @return {Promise<void>} 无返回值
  * @async
  */
-async function addFrontmatter(target: string, options: { dir?: boolean; verbose?: boolean; map?: string | boolean }): Promise<void> {
+async function addFrontmatter(
+  target: string,
+  options: { dir?: boolean; verbose?: boolean; map?: string | boolean }
+): Promise<void> {
   try {
     // 检查目标是文件还是目录
     const stat = fs.statSync(target);
-    
+
     if (stat.isFile()) {
       // 处理单个文件
-      if (path.extname(target) === '.md') {
+      if (path.extname(target) === ".md") {
         // 生成frontmatter内容（默认使用post模板）
         const frontmatter = await generateFrontmatter(target, options.map);
         addFrontmatterToFile(target, frontmatter);
@@ -165,8 +181,8 @@ async function addFrontmatter(target: string, options: { dir?: boolean; verbose?
       for (const file of files) {
         const filePath = path.join(target, file);
         const fileStat = fs.statSync(filePath);
-        
-        if (fileStat.isFile() && path.extname(filePath) === '.md') {
+
+        if (fileStat.isFile() && path.extname(filePath) === ".md") {
           // 生成frontmatter内容（默认使用post模板）
           const frontmatter = await generateFrontmatter(filePath, options.map);
           addFrontmatterToFile(filePath, frontmatter);

@@ -7,10 +7,10 @@
  * Description: 实现sdoc tree命令，打印目录树结构
  * ======================================================
  */
-import fs from 'fs';
-import path from 'path';
-import { Command } from 'commander';
-import color from 'picocolors';
+import fs from "fs";
+import path from "path";
+import { Command } from "commander";
+import color from "picocolors";
 
 interface TreeCounts {
   dirCount: number;
@@ -33,7 +33,7 @@ interface TreeOptions {
  */
 function generateTree(
   dirPath: string,
-  prefix: string = '',
+  prefix: string = "",
   maxDepth: number = Infinity,
   currentDepth: number = 0,
   ignoreDirs: string[] = []
@@ -56,7 +56,7 @@ function generateTree(
 
     // 构建当前项的连接线
     let line = prefix; // 继承父级前缀
-    line += isCurrentLast ? '└── ' : '├── '; // 添加当前项连接符号
+    line += isCurrentLast ? "└── " : "├── "; // 添加当前项连接符号
     // 根据是目录还是文件使用不同颜色
     line += stats.isDirectory() ? color.blue(file) : color.green(file); // 添加文件名
 
@@ -68,13 +68,8 @@ function generateTree(
       // 如果是目录且未达到最大深度限制，则递归处理
       if (currentDepth < maxDepth - 1) {
         // 为子目录项计算前缀：添加适当的缩进和连接线
-        const childPrefix = prefix + (isCurrentLast ? '    ' : '│   ');
-        const subCounts = generateTree(
-          fullPath,
-          childPrefix,
-          maxDepth,
-          currentDepth + 1
-        );
+        const childPrefix = prefix + (isCurrentLast ? "    " : "│   ");
+        const subCounts = generateTree(fullPath, childPrefix, maxDepth, currentDepth + 1);
         dirCount += subCounts.dirCount;
         fileCount += subCounts.fileCount;
       }
@@ -99,20 +94,14 @@ function main(dir: string = process.cwd(), options: TreeOptions = {}): void {
     console.log(path.basename(currentDir));
     // 处理 ignore 参数，支持字符串和数组格式
     const ignoreDirs =
-      typeof options.ignore === 'string'
-        ? options.ignore.split(',').map((s) => s.trim()) // 将逗号分隔的字符串转换为数组
+      typeof options.ignore === "string"
+        ? options.ignore.split(",").map((s) => s.trim()) // 将逗号分隔的字符串转换为数组
         : options.ignore || []; // 如果已经是数组则直接使用，否则使用空数组
-    const counts = generateTree(
-      currentDir,
-      '',
-      options.level || Infinity,
-      0,
-      ignoreDirs
-    );
+    const counts = generateTree(currentDir, "", options.level || Infinity, 0, ignoreDirs);
     console.log(`\n${counts.dirCount} directories, ${counts.fileCount} files`);
     process.exit(0); // 确保程序正常退出
   } catch (err) {
-    console.error('执行tree命令出错:', err);
+    console.error("执行tree命令出错:", err);
     process.exit(1);
   }
 }
@@ -135,15 +124,15 @@ export default {
 export function registerTreeCommand(program: Command): void {
   // 添加显示目录树结构的命令
   program
-    .command('tree [dir]')
-    .description('显示指定目录的树状结构，默认为当前目录')
-    .option('-L, --level <number>', '设置最大递归深度', parseInt)
-    .option('-i, --ignore <dirs>', '要忽略的目录列表(逗号分隔)', String)
+    .command("tree [dir]")
+    .description("显示指定目录的树状结构，默认为当前目录")
+    .option("-L, --level <number>", "设置最大递归深度", parseInt)
+    .option("-i, --ignore <dirs>", "要忽略的目录列表(逗号分隔)", String)
     .action((dir: string, options: TreeOptions) => {
       try {
         main(dir, options);
       } catch (err) {
-        console.error('❌ 显示目录树失败:', (err as Error).message);
+        console.error("❌ 显示目录树失败:", (err as Error).message);
         process.exit(1);
       }
     });

@@ -1,5 +1,5 @@
-import { input, password } from '@inquirer/prompts';
-import { createInterface } from 'readline';
+import { input, password } from "@inquirer/prompts";
+import { createInterface } from "readline";
 
 // 清空标准输入缓冲区
 function clearStdin() {
@@ -17,27 +17,25 @@ export default async function loginCommand() {
   await new Promise((resolve) => setImmediate(resolve));
   try {
     const username = await input({
-      message: '请输入用户名:',
-      validate: (value) => value.trim() !== '' || '用户名不能为空'
+      message: "请输入用户名:",
+      validate: (value) => value.trim() !== "" || "用户名不能为空"
     });
 
     const userPassword = await password({
-      message: '请输入密码:',
-      mask: '*',
-      validate: (value) => value.length >= 6 || '密码长度至少6位'
+      message: "请输入密码:",
+      mask: "*",
+      validate: (value) => value.length >= 6 || "密码长度至少6位"
     });
 
-    console.log('\n登录信息验证中...');
+    console.log("\n登录信息验证中...");
     // 实际开发中这里替换为真实的登录API调用
     await new Promise((resolve) => setTimeout(resolve, 200)); // 模拟网络延迟
 
-    console.log(
-      `\n✅ 登录成功！欢迎回来，${username} (密码长度: ${'*'.repeat(userPassword.length)})`
-    );
+    console.log(`\n✅ 登录成功！欢迎回来，${username} (密码长度: ${"*".repeat(userPassword.length)})`);
     // 返回用户信息（模拟）
-    return { username, token: '模拟令牌' };
+    return { username, token: "模拟令牌" };
   } catch (error) {
-    console.error('\n❌ 登录失败:', (error as Error).message);
+    console.error("\n❌ 登录失败:", (error as Error).message);
     process.exit(1);
   }
 }

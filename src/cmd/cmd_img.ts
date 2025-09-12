@@ -11,12 +11,11 @@
  * 3. 转换模式: tdoc img -t xxx.md 或 tdoc img -t -d xxx (转换图片路径为OSS绝对路径)
  * ======================================================
  */
-const OSS_BASE_URL = 'https://fanhua-picture.oss-cn-hangzhou.aliyuncs.com/';
-import fs from 'fs';
-import readline from 'readline';
-import path from 'path';
-import simpleGit from 'simple-git';
-
+const OSS_BASE_URL = "https://fanhua-picture.oss-cn-hangzhou.aliyuncs.com/";
+import fs from "fs";
+import readline from "readline";
+import path from "path";
+import simpleGit from "simple-git";
 
 /**
  * @brief 获取文件相对于git仓库根目录的相对路径
@@ -25,7 +24,7 @@ import simpleGit from 'simple-git';
  */
 async function getRelativePath(filePath: string): Promise<string> {
   const git = simpleGit(path.dirname(filePath));
-  const rootPath = await git.revparse(['--show-toplevel']);
+  const rootPath = await git.revparse(["--show-toplevel"]);
   return path.relative(rootPath.trim(), filePath);
 }
 
@@ -36,12 +35,12 @@ async function getRelativePath(filePath: string): Promise<string> {
  */
 async function processImagePaths(filePath: string, debugMode = false, transformMode = false): Promise<void> {
   // 如果是转换模式，提前获取相对路径和根目录名
-  let relativePath = '';
-  let rootDirName = '';
+  let relativePath = "";
+  let rootDirName = "";
   if (transformMode) {
     try {
       const git = simpleGit(path.dirname(filePath));
-      const rootPath = await git.revparse(['--show-toplevel']);
+      const rootPath = await git.revparse(["--show-toplevel"]);
       relativePath = path.relative(rootPath.trim(), filePath);
       rootDirName = path.basename(rootPath.trim());
     } catch (err) {
@@ -66,9 +65,9 @@ async function processImagePaths(filePath: string, debugMode = false, transformM
 
     let totalImages = 0;
     let processedImages = 0;
-    
+
     // 处理每行内容的回调函数
-    rl.on('line', (line: string) => {
+    rl.on("line", (line: string) => {
       /**
        * 处理Markdown图片语法: ![alt text](image-path)
        * 正则表达式说明:
@@ -76,40 +75,37 @@ async function processImagePaths(filePath: string, debugMode = false, transformM
        * - \((?!http)([^)]+)\) : 匹配(path)但排除http(s)路径
        * - 回调函数检查路径是否需要添加'./'前缀
        */
-      line = line.replace(
-        /!\[.*?\]\((?!http)([^)]+)\)/g,
-        (match: string, p1: string) => {
-          if (!p1.startsWith('http') && !p1.startsWith('/') && !p1.match(/^[a-zA-Z]:[\\\/]/)) {
-            totalImages++;
-          }
-          
-          if (transformMode) {
-            // 转换模式：替换为OSS绝对路径
-            if (!p1.startsWith('http')) {
-              const dirPath = path.dirname(relativePath).split(path.sep).join('/');
-              const imgPath = (p1.startsWith('./') ? p1.substring(2) : p1).split(path.sep).join('/');
-              const ossPath = `${OSS_BASE_URL}${rootDirName}/${dirPath}/${imgPath}`;
-              
-              processedImages++;
-              if (debugMode) {
-                console.log('🖼️  图片路径转换: %s → %s', p1, ossPath);
-              }
-              return match.replace(p1, ossPath);
-            }
-          } else {
-            // 原有模式：添加'./'前缀
-            if (!p1.startsWith('./') && !p1.startsWith('http')) {
-              processedImages++;
-              if (debugMode) {
-                console.log(`🖼️  图片路径优化: ${p1} → ./${p1}`);
-              }
-              return match.replace(p1, `./${p1}`);
-            }
-          }
-          
-          return match; // 如果已有前缀或是http路径则保持不变
+      line = line.replace(/!\[.*?\]\((?!http)([^)]+)\)/g, (match: string, p1: string) => {
+        if (!p1.startsWith("http") && !p1.startsWith("/") && !p1.match(/^[a-zA-Z]:[\\\/]/)) {
+          totalImages++;
         }
-      );
+
+        if (transformMode) {
+          // 转换模式：替换为OSS绝对路径
+          if (!p1.startsWith("http")) {
+            const dirPath = path.dirname(relativePath).split(path.sep).join("/");
+            const imgPath = (p1.startsWith("./") ? p1.substring(2) : p1).split(path.sep).join("/");
+            const ossPath = `${OSS_BASE_URL}${rootDirName}/${dirPath}/${imgPath}`;
+
+            processedImages++;
+            if (debugMode) {
+              console.log("🖼️  图片路径转换: %s → %s", p1, ossPath);
+            }
+            return match.replace(p1, ossPath);
+          }
+        } else {
+          // 原有模式：添加'./'前缀
+          if (!p1.startsWith("./") && !p1.startsWith("http")) {
+            processedImages++;
+            if (debugMode) {
+              console.log(`🖼️  图片路径优化: ${p1} → ./${p1}`);
+            }
+            return match.replace(p1, `./${p1}`);
+          }
+        }
+
+        return match; // 如果已有前缀或是http路径则保持不变
+      });
 
       /**
        * 处理HTML图片标签: <img src="image-path">
@@ -120,67 +116,60 @@ async function processImagePaths(filePath: string, debugMode = false, transformM
        * - [^>]*> : 匹配剩余属性和结束标签'>'
        * - 回调函数检查路径是否需要添加'./'前缀
        */
-      line = line.replace(
-        /<img\s+[^>]*src="(?!http)([^"]+)"[^>]*>/g,
-        (match: string, p1: string) => {
-          if (!p1.startsWith('http') && !p1.startsWith('/') && !p1.match(/^[a-zA-Z]:[\\\/]/)) {
-            totalImages++;
-          }
-          
-          if (transformMode) {
-            // 转换模式：替换为OSS绝对路径
-            if (!p1.startsWith('http')) {
-              const dirPath = path.dirname(relativePath).split(path.sep).join('/');
-              const imgPath = (p1.startsWith('./') ? p1.substring(2) : p1).split(path.sep).join('/');
-              const ossPath = `${OSS_BASE_URL}${rootDirName}/${dirPath}/${imgPath}`;
-              
-              processedImages++;
-              if (debugMode) {
-                console.log(`🖼️  HTML图片路径转换: ${p1} → ${ossPath}`);
-              }
-              return match.replace(p1, ossPath);
-            }
-          } else {
-            // 原有模式：添加'./'前缀
-            if (!p1.startsWith('./') && !p1.startsWith('http')) {
-              processedImages++;
-              if (debugMode) {
-                console.log(`🖼️  图片路径优化: ${p1} → ./${p1}`);
-              }
-              return match.replace(p1, `./${p1}`);
-            }
-          }
-          return match; // 如果已有前缀或是http路径则保持不变
+      line = line.replace(/<img\s+[^>]*src="(?!http)([^"]+)"[^>]*>/g, (match: string, p1: string) => {
+        if (!p1.startsWith("http") && !p1.startsWith("/") && !p1.match(/^[a-zA-Z]:[\\\/]/)) {
+          totalImages++;
         }
-      );
+
+        if (transformMode) {
+          // 转换模式：替换为OSS绝对路径
+          if (!p1.startsWith("http")) {
+            const dirPath = path.dirname(relativePath).split(path.sep).join("/");
+            const imgPath = (p1.startsWith("./") ? p1.substring(2) : p1).split(path.sep).join("/");
+            const ossPath = `${OSS_BASE_URL}${rootDirName}/${dirPath}/${imgPath}`;
+
+            processedImages++;
+            if (debugMode) {
+              console.log(`🖼️  HTML图片路径转换: ${p1} → ${ossPath}`);
+            }
+            return match.replace(p1, ossPath);
+          }
+        } else {
+          // 原有模式：添加'./'前缀
+          if (!p1.startsWith("./") && !p1.startsWith("http")) {
+            processedImages++;
+            if (debugMode) {
+              console.log(`🖼️  图片路径优化: ${p1} → ./${p1}`);
+            }
+            return match.replace(p1, `./${p1}`);
+          }
+        }
+        return match; // 如果已有前缀或是http路径则保持不变
+      });
 
       // 将处理后的行添加到输出数组
       outputLines.push(line);
     });
 
     // 文件读取完成时的回调
-    rl.on('close', () => {
+    rl.on("close", () => {
       // 将所有处理后的行写回原文件
-      fs.writeFile(
-        filePath,
-        outputLines.join('\n'),
-        (err: NodeJS.ErrnoException | null) => {
-          if (err) {
-            reject(err); // 写入失败时拒绝Promise
-          } else {
-            // 打印成功信息
-            console.log(`✅ 图片路径处理完成: ${filePath}`);
-            if (debugMode) {
-              console.log(`📊 共检测到 ${totalImages} 个图片链接，优化了 ${processedImages} 个相对路径`);
-            }
-            resolve(); // 成功时解决Promise
+      fs.writeFile(filePath, outputLines.join("\n"), (err: NodeJS.ErrnoException | null) => {
+        if (err) {
+          reject(err); // 写入失败时拒绝Promise
+        } else {
+          // 打印成功信息
+          console.log(`✅ 图片路径处理完成: ${filePath}`);
+          if (debugMode) {
+            console.log(`📊 共检测到 ${totalImages} 个图片链接，优化了 ${processedImages} 个相对路径`);
           }
+          resolve(); // 成功时解决Promise
         }
-      );
+      });
     });
 
     // 读取错误时的回调
-    rl.on('error', (err: Error) => {
+    rl.on("error", (err: Error) => {
       reject(err);
     });
   });
@@ -196,7 +185,7 @@ async function processDirectory(dirPath: string, debugMode = false, transformMod
 
   try {
     // 获取当前目录相对于git根目录的路径
-    const rootPath = await git.revparse(['--show-toplevel']);
+    const rootPath = await git.revparse(["--show-toplevel"]);
     const relativePath = path.relative(rootPath.trim(), dirPath);
 
     // 获取git状态信息（仅包含当前目录下的文件）
@@ -208,22 +197,17 @@ async function processDirectory(dirPath: string, debugMode = false, transformMod
         // 只处理当前目录下的.md文件
         const filePath = path.normalize(file);
         const inTargetDir =
-          relativePath === '.'
+          relativePath === "."
             ? !filePath.includes(path.sep)
             : filePath.startsWith(relativePath + path.sep) &&
-              filePath.split(path.sep).length ===
-                relativePath.split(path.sep).length + 1;
+              filePath.split(path.sep).length === relativePath.split(path.sep).length + 1;
 
-        return (
-          file.endsWith('.md') &&
-          inTargetDir &&
-          fs.existsSync(path.join(dirPath, path.basename(file)))
-        );
+        return file.endsWith(".md") && inTargetDir && fs.existsSync(path.join(dirPath, path.basename(file)));
       })
       .map((file) => path.basename(file));
 
     // 打印将要处理的文件列表
-    console.log('📋 将要处理的文件:');
+    console.log("📋 将要处理的文件:");
     mdFiles.forEach((file) => console.log(`  - ${file}`));
 
     // 处理每个.md文件
@@ -248,30 +232,30 @@ async function processDirectory(dirPath: string, debugMode = false, transformMod
  */
 async function main(args: string[]): Promise<void> {
   if (args.length === 0) {
-    console.error('❌ 请提供文件路径或目录路径');
+    console.error("❌ 请提供文件路径或目录路径");
     process.exit(1);
   }
 
   // 检查是否启用调试模式
-  const debugIndex = args.indexOf('--debug');
+  const debugIndex = args.indexOf("--debug");
   const debugMode = debugIndex !== -1;
   if (debugMode) {
     args.splice(debugIndex, 1); // 移除debug参数
   }
 
   // 检查是否启用转换模式
-  const transformIndex = args.indexOf('-t');
+  const transformIndex = args.indexOf("-t");
   const transformMode = transformIndex !== -1;
   if (transformMode) {
     args.splice(transformIndex, 1); // 移除-t参数
   }
 
-  if (args[0] === '-d' && args[1]) {
+  if (args[0] === "-d" && args[1]) {
     await processDirectory(args[1], debugMode, transformMode);
-  } else if (args[0].endsWith('.md')) {
+  } else if (args[0].endsWith(".md")) {
     await processImagePaths(args[0], debugMode, transformMode);
   } else {
-    console.error('❌ 无效参数');
+    console.error("❌ 无效参数");
     process.exit(1);
   }
 }
