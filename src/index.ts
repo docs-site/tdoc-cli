@@ -11,13 +11,13 @@
 import { Command } from "commander";
 import pkg from "../package.json";
 import { registerImgCommand } from "./system/img";
-import gitSubmoduleCommand from "./cmd/cmd_git_submodule";
 import { registerTreeCommand } from "./system/tree";
-import loginCommand from "./inquirer-cmd/login";
-import { cmdInit } from "./inquirer-cmd/init";
 import sidebarCommand from "./cmd/cmd_sidebar";
 import { registerMarkdownCommands } from "./markdown";
 import mistCommand from "./mist/mist-cli";
+import { registerGitSubmoduleCommand } from "./cmd/cmd_git_submodule";
+import { registerLoginCommand } from "./inquirer-cmd/login";
+import { registerInitCommand } from "./inquirer-cmd/init";
 /**
  * @brief 创建commander的Command实例
  */
@@ -57,56 +57,16 @@ function getVersionInfo(): string {
 
 program.version(getVersionInfo(), "-v, --version", "显示版本信息和依赖包");
 
-// 添加处理git子模块的命令
-program
-  .command(gitSubmoduleCommand.command)
-  .description(gitSubmoduleCommand.description)
-  .action((dir) => {
-    try {
-      gitSubmoduleCommand.handler(dir);
-    } catch (err) {
-      console.error("❌ 处理子模块失败:", (err as Error).message);
-      process.exit(1);
-    }
-  });
+registerGitSubmoduleCommand(program); // 注册git子模块命令
+registerLoginCommand(program); // 注册登录命令
+registerInitCommand(program); // 注册初始化项目命令
 
-// 登录命令
-program
-  .command("login")
-  .description("用户登录")
-  .action(async () => {
-    await loginCommand();
-  });
+program.addCommand(sidebarCommand()); // 添加生成sidebar的命令
+program.addCommand(mistCommand()); // 添加mist相关命令
 
-// 初始化项目命令
-program
-  .command("init [dirName]")
-  .description("Initialize a new tdoc project")
-  .option("-y, --yes", "Skip prompts and use default values")
-  .option("--scope <scope>", "Set npm package scope (e.g. myorg)")
-  .action(async (dirName, options) => {
-    try {
-      await cmdInit(dirName, false, options.yes, options.scope);
-    } catch (err) {
-      console.error("❌ 初始化项目失败:", (err as Error).message);
-      process.exit(1);
-    }
-  });
-
-// 添加生成sidebar的命令
-program.addCommand(sidebarCommand());
-
-// 添加mist相关命令
-program.addCommand(mistCommand());
-
-// 注册markdown相关的命令
-registerMarkdownCommands(program);
-
-// 注册tree命令
-registerTreeCommand(program);
-
-// 注册img命令
-registerImgCommand(program);
+registerMarkdownCommands(program); // 注册markdown相关的命令
+registerTreeCommand(program); // 注册tree命令
+registerImgCommand(program); // 注册img命令
 
 // console.log('Raw arguments:', process.argv); // 用于代码压缩测试，压缩后将不会打印这些参数
 program.parse(); // 参数处理

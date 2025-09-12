@@ -10,6 +10,7 @@
 import { execSync } from "child_process";
 import fs from "fs";
 import path from "path";
+import { Command } from "commander";
 
 /**
  * @brief Checks if a directory is a valid git repository
@@ -97,8 +98,22 @@ function handleGitSubmodule(dir: string): void {
   process.exit(0);
 }
 
-export default {
-  command: "git-submodule [dir]",
-  description: "检查并转换git子模块URL格式",
-  handler: handleGitSubmodule
-};
+/**
+ * @brief 注册git子模块命令
+ * @param {Command} program - commander的Command实例
+ */
+function registerGitSubmoduleCommand(program: Command): void {
+  program
+    .command("git-submodule [dir]")
+    .description("检查并转换git子模块URL格式")
+    .action((dir: string) => {
+      try {
+        handleGitSubmodule(dir);
+      } catch (err) {
+        console.error("❌ 处理子模块失败:", (err as Error).message);
+        process.exit(1);
+      }
+    });
+}
+
+export { registerGitSubmoduleCommand };

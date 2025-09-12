@@ -3,6 +3,7 @@ import { input, confirm, select } from "@inquirer/prompts";
 import fs from "fs-extra";
 import path from "path";
 import { execSync } from "child_process";
+import { Command } from "commander";
 
 // 定义默认依赖项
 const devDependencies: string[] = ["@types/node"];
@@ -345,3 +346,25 @@ export async function cmdInit(dirName?: string, skipPrompts = false, yes = false
   console.log(`\n✅ Project ${answers.name} initialized successfully!`);
   console.log(`++++++++++ cd ${answers.name} to get started. ++++++++++`);
 }
+
+/**
+ * @brief 注册初始化项目命令
+ * @param {Command} program - commander的Command实例
+ */
+function registerInitCommand(program: Command): void {
+  program
+    .command("init [dirName]")
+    .description("Initialize a new tdoc project")
+    .option("-y, --yes", "Skip prompts and use default values")
+    .option("--scope <scope>", "Set npm package scope (e.g. myorg)")
+    .action(async (dirName: string | undefined, options: { yes?: boolean; scope?: string }) => {
+      try {
+        await cmdInit(dirName, false, options.yes, options.scope);
+      } catch (err) {
+        console.error("❌ 初始化项目失败:", (err as Error).message);
+        process.exit(1);
+      }
+    });
+}
+
+export { registerInitCommand };

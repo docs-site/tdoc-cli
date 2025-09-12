@@ -1,5 +1,6 @@
 import { input, password } from "@inquirer/prompts";
 import { createInterface } from "readline";
+import { Command } from "commander";
 
 // 清空标准输入缓冲区
 function clearStdin() {
@@ -41,9 +42,24 @@ export default async function loginCommand() {
 }
 
 /**
+ * @brief 注册登录命令
+ * @param {Command} program - commander的Command实例
+ */
+function registerLoginCommand(program: Command): void {
+  program
+    .command("login")
+    .description("用户登录")
+    .action(async () => {
+      await loginCommand();
+    });
+}
+
+/**
  * @brief 直接执行检查
  * @description 当文件被直接执行而非require导入时，自动运行 loginCommand 函数
  */
 if (require.main === module) {
   loginCommand();
 }
+
+export { registerLoginCommand };
