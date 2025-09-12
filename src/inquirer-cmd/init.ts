@@ -348,13 +348,13 @@ export async function cmdInit(dirName?: string, skipPrompts = false, yes = false
 }
 
 /**
- * @brief 注册初始化项目命令
- * @param {Command} program - commander的Command实例
+ * @brief 创建初始化项目命令
+ * @return {Command} 配置好的Command实例
  */
-function registerInitCommand(program: Command): void {
-  program
-    .command("init [dirName]")
+function createInitCommand(): Command {
+  const program = new Command("init")
     .description("Initialize a new tdoc project")
+    .argument("[dirName]", "项目目录名")
     .option("-y, --yes", "Skip prompts and use default values")
     .option("--scope <scope>", "Set npm package scope (e.g. myorg)")
     .action(async (dirName: string | undefined, options: { yes?: boolean; scope?: string }) => {
@@ -365,6 +365,8 @@ function registerInitCommand(program: Command): void {
         process.exit(1);
       }
     });
+
+  return program;
 }
 
-export { registerInitCommand };
+export default createInitCommand;
