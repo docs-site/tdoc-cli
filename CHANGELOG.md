@@ -2,6 +2,42 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.12](https://github.com/docs-site/tdoc-cli/compare/v1.1.11...v1.1.12) (2025-09-12)
+
+### Features
+
+- **commit:** 🚀 提交前自动运行eslint ([b9390ce](https://github.com/docs-site/tdoc-cli/commit/b9390ce8e581fbb0bd33be5c15bacba90b96ce71))
+- **system:** 🚀 tree命令增加高亮显示 ([cff35bf](https://github.com/docs-site/tdoc-cli/commit/cff35bfe542b0a8338f4e00ad0cd1fe701bdb907))
+- **system:** 🚀 tree命令支持指定目录的扫描 ([14890b6](https://github.com/docs-site/tdoc-cli/commit/14890b68582cf37867ec6acbfb9f03b4ee945dfa))
+
+### Bug Fixes
+
+- **cmd:** 🐞 修复img命令的eslint错误 ([496f56f](https://github.com/docs-site/tdoc-cli/commit/496f56fa017e97be765cde47856ecb040c1e4d3c))
+- **inquirer-cmd:** 🐞 修复init的eslint错误 ([94d141a](https://github.com/docs-site/tdoc-cli/commit/94d141a5f911037b6fb74ce0509aa816ead0169e))
+- **markdown:** 🐞 修复markdown相关命令的eslint报错 ([68b4b87](https://github.com/docs-site/tdoc-cli/commit/68b4b87389b92617f10e7a2d6f20268631c4fa52))
+
+### Styling
+
+- **style:** 🎨 格式化代码 ([5e05a87](https://github.com/docs-site/tdoc-cli/commit/5e05a87e99da4b5d7d25562a80a05f9c493567c5))
+- **style:** 🎨 设置保存自动格式化 ([666de6b](https://github.com/docs-site/tdoc-cli/commit/666de6b7cdb537e6284db233fce5249a573a3fe0))
+
+### Code Refactoring
+
+- **cmd:** ♻️ 统一git-submodule、init、login命令的注册方式 ([9eabc4f](https://github.com/docs-site/tdoc-cli/commit/9eabc4f2b16f1d38b2ae72690f75770d74d1d6f5))
+- **cmd:** ♻️ git-submodule命令采用addCommand方式注册 ([bebce55](https://github.com/docs-site/tdoc-cli/commit/bebce558945854ce254700432ade1a1ffd62eda3))
+- **cmd:** ♻️ init命令修改为addCommand方式注册 ([73fed3d](https://github.com/docs-site/tdoc-cli/commit/73fed3dd51f334338e93137955c91cf9433035b3))
+- **cmd:** ♻️ login命令修改为addCommand方式注册 ([2dddb22](https://github.com/docs-site/tdoc-cli/commit/2dddb22b897396229b6cb0e9b7a56f159a577fa1))
+- **cmd:** ♻️ tree命令移入system目录 ([2460c0e](https://github.com/docs-site/tdoc-cli/commit/2460c0e00214b38964721d0357332f7fd2bfedfa))
+- **markdown:** ♻️ markdown相关命令修改为addCommand方式注册 ([418347e](https://github.com/docs-site/tdoc-cli/commit/418347e17dc019eae116ca7810232f2a7169e538))
+- **system:** ♻️ img命令修改为addCommand方式注册 ([37e5b80](https://github.com/docs-site/tdoc-cli/commit/37e5b807feac8f345f131f1040f138212052fc19))
+- **system:** ♻️ img命令移动到system目录 ([396c28e](https://github.com/docs-site/tdoc-cli/commit/396c28e59c0d3d3ca5162c334b7f8b3d5282eeae))
+- **system:** ♻️ tree命令改为addCommand方式注册 ([11023b7](https://github.com/docs-site/tdoc-cli/commit/11023b747599fa22ca9d30c36cc89a330835707e))
+- **system:** ♻️ tree命令优化 ([f7ce081](https://github.com/docs-site/tdoc-cli/commit/f7ce081a98f2e1400cde9adc1385c3a559f23526))
+
+### Docs
+
+- **docs:** 📚 更新README.md ([698e8f5](https://github.com/docs-site/tdoc-cli/commit/698e8f57cba7528ad7aed4de3bf0c55f5c4b891c))
+
 ### [1.1.11](https://github.com/docs-site/tdoc-cli/compare/v1.1.9...v1.1.11) (2025-09-11)
 
 ### Others
