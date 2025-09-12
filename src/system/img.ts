@@ -11,17 +11,14 @@
  * 3. 转换模式: tdoc img -t xxx.md 或 tdoc img -t -d xxx (转换图片路径为OSS绝对路径)
  * ======================================================
  */
-const OSS_BASE_URL = "https://fanhua-picture.oss-cn-hangzhou.aliyuncs.com/";
+
 import fs from "fs";
 import readline from "readline";
 import path from "path";
 import simpleGit from "simple-git";
+import { Command } from "commander";
 
-/**
- * @brief 获取文件相对于git仓库根目录的相对路径
- * @param {string} filePath 文件路径
- * @return {Promise<string>} 相对路径
- */
+const OSS_BASE_URL = "https://fanhua-picture.oss-cn-hangzhou.aliyuncs.com/";
 
 /**
  * @brief 处理markdown文件中的图片路径
@@ -255,4 +252,36 @@ async function main(args: string[]): Promise<void> {
   }
 }
 
-export { processImagePaths, processDirectory, main };
+/**
+ * @brief 注册img命令到program实例
+ * @param {Command} program commander的Command实例
+ * @return {void} 无返回值
+ */
+export function registerImgCommand(program: Command): void {
+  // 添加处理图片路径的命令
+  program
+    .command("img [path]")
+    .description("处理markdown文件中的图片路径")
+    .option("-d, --dir", "处理目录中git修改/新增的markdown文件")
+    .option("-t, --transform", "转换图片路径为OSS绝对路径")
+    .option("--debug", "显示详细处理信息")
+    .action(async (path, options) => {
+      try {
+        const args = [];
+        if (options.dir) {
+          args.push("-d");
+        }
+        if (options.transform) {
+          args.push("-t");
+        }
+        args.push(path);
+        if (options.debug) {
+          args.push("--debug");
+        }
+        await main(args);
+      } catch (err) {
+        console.error("❌ 处理图片路径失败:", (err as Error).message);
+        process.exit(1);
+      }
+    });
+}

@@ -10,7 +10,7 @@
 
 import { Command } from "commander";
 import pkg from "../package.json";
-import { main as processImages } from "./cmd/cmd_img";
+import { registerImgCommand } from "./system/img";
 import gitSubmoduleCommand from "./cmd/cmd_git_submodule";
 import { registerTreeCommand } from "./system/tree";
 import loginCommand from "./inquirer-cmd/login";
@@ -56,33 +56,6 @@ function getVersionInfo(): string {
 }
 
 program.version(getVersionInfo(), "-v, --version", "显示版本信息和依赖包");
-
-// 添加处理图片路径的命令
-program
-  .command("img [path]")
-  .description("处理markdown文件中的图片路径")
-  .option("-d, --dir", "处理目录中git修改/新增的markdown文件")
-  .option("-t, --transform", "转换图片路径为OSS绝对路径")
-  .option("--debug", "显示详细处理信息")
-  .action(async (path, options) => {
-    try {
-      const args = [];
-      if (options.dir) {
-        args.push("-d");
-      }
-      if (options.transform) {
-        args.push("-t");
-      }
-      args.push(path);
-      if (options.debug) {
-        args.push("--debug");
-      }
-      await processImages(args);
-    } catch (err) {
-      console.error("❌ 处理图片路径失败:", (err as Error).message);
-      process.exit(1);
-    }
-  });
 
 // 添加处理git子模块的命令
 program
@@ -131,6 +104,9 @@ registerMarkdownCommands(program);
 
 // 注册tree命令
 registerTreeCommand(program);
+
+// 注册img命令
+registerImgCommand(program);
 
 // console.log('Raw arguments:', process.argv); // 用于代码压缩测试，压缩后将不会打印这些参数
 program.parse(); // 参数处理
