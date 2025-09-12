@@ -10,7 +10,6 @@
 
 import fs from "fs";
 import path from "path";
-import { PERMALINK_PREFIX } from "./helper";
 
 /**
  * @interface Metadata
@@ -67,12 +66,12 @@ interface ParsedPermalink {
  */
 function parsePermalink(permalink: string): ParsedPermalink {
   // 移除前导斜杠
-  let processedPermalink = permalink.startsWith("/") ? permalink.substring(1) : permalink;
+  const processedPermalink = permalink.startsWith("/") ? permalink.substring(1) : permalink;
 
   // 提取最后的24位十六进制数部分（支持带路径映射的格式）
   // 例如: "sdoc/default/docs/126b07d4923a2b9e6fb3e6b1" -> "126b07d4923a2b9e6fb3e6b1"
   const parts = processedPermalink.split("/");
-  let hexStr = parts[parts.length - 1]; // 取最后一部分
+  const hexStr = parts[parts.length - 1]; // 取最后一部分
 
   // 验证是否为24位十六进制数
   if (hexStr.length !== 24) {
@@ -120,7 +119,7 @@ function parsePermalink(permalink: string): ParsedPermalink {
           break;
         }
       }
-    } catch (e) {
+    } catch {
       // 继续尝试其他长度
       continue;
     }

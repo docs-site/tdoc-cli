@@ -311,16 +311,22 @@ async function processPathWithMap(outputDir: string, mapFile?: string): Promise<
     }
 
     // 读取并解析映射文件 (只支持.js类型)
-    let pathMap: Record<string, string>;
     if (!pathMapPath.endsWith(".js")) {
       console.error(`❌ 映射文件必须是.js类型: ${pathMapPath}`);
       return null;
     }
 
-    // 使用require导入JS文件
-    let loadedMap = require(pathMapPath);
+    // 使用动态import导入JS文件
+    let loadedMap;
+    try {
+      loadedMap = await import(pathMapPath);
+    } catch (err) {
+      console.error(`❌ 导入映射文件失败: ${pathMapPath}`);
+      console.error((err as Error).message);
+      return null;
+    }
     // 处理ES6模块的default导出
-    pathMap = loadedMap.default || loadedMap;
+    const pathMap: Record<string, string> = loadedMap.default || loadedMap;
 
     // 从sdoc开始截断路径
     const sdocPath = absoluteOutputDir.substring(sdocIndex);
