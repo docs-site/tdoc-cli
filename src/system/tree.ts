@@ -107,25 +107,13 @@ function main(dir: string = process.cwd(), options: TreeOptions = {}): void {
 }
 
 /**
- * @brief 模块导出对象
- * @property {function} generateTree 生成目录树结构的函数
- * @property {function} main 执行tree命令的主函数
+ * @brief 创建tree命令
+ * @return {Command} 配置好的Command实例
  */
-export default {
-  generateTree,
-  main
-};
-
-/**
- * @brief 注册tree命令到program实例
- * @param {Command} program commander的Command实例
- * @return {void} 无返回值
- */
-export function registerTreeCommand(program: Command): void {
-  // 添加显示目录树结构的命令
-  program
-    .command("tree [dir]")
+function createTreeCommand(): Command {
+  const program = new Command("tree")
     .description("显示指定目录的树状结构，默认为当前目录")
+    .argument("[dir]", "目录路径")
     .option("-L, --level <number>", "设置最大递归深度", parseInt)
     .option("-i, --ignore <dirs>", "要忽略的目录列表(逗号分隔)", String)
     .action((dir: string, options: TreeOptions) => {
@@ -136,7 +124,11 @@ export function registerTreeCommand(program: Command): void {
         process.exit(1);
       }
     });
+
+  return program;
 }
+
+export { createTreeCommand };
 
 /**
  * @brief 直接执行检查
