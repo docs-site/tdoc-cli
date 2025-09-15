@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.13](https://github.com/docs-site/tdoc-cli/compare/v1.1.12...v1.1.13) (2025-09-15)
+
+### Features
+
+- **markdown:** 🚀 添加md文档移动命令 ([05f49db](https://github.com/docs-site/tdoc-cli/commit/05f49db932d65ede5954d6f9c6268713407fbb4c))
+
+### Code Refactoring
+
+- **markdown:** ♻️ 移动文档转图片链接时进行URL编码 ([3c3eb9b](https://github.com/docs-site/tdoc-cli/commit/3c3eb9bb9cf5389235f9aedcd325fbd81c29e054))
+- **markdown:** ♻️ 优化m:d命令的统计逻辑 ([33deb56](https://github.com/docs-site/tdoc-cli/commit/33deb5693aa5ed8e4e37fb4a225b5ef73b70ea46))
+
 ### [1.1.12](https://github.com/docs-site/tdoc-cli/compare/v1.1.11...v1.1.12) (2025-09-12)
 
 ### Features
