@@ -21,6 +21,56 @@ const OSS_BASE_URL = "https://fanhua-picture.oss-cn-hangzhou.aliyuncs.com/";
 const IMAGE_EXTENSIONS = new Set([".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp", ".svg"]);
 
 /**
+ * @brief 同时统计文件数量和拥有图片资源目录的文档数量
+ * @param {string} sourceDir - 源目录
+ * @param {boolean} markdownOnly - 是否只计算markdown文件
+ * @return {Promise<{fileCount: number, imageResourceDocCount: number}>} 文件数量和拥有图片资源目录的文档数量
+ * @async
+ */
+async function countFilesAndDocsWithImageResources(
+  sourceDir: string,
+  markdownOnly: boolean = false
+): Promise<{ fileCount: number; imageResourceDocCount: number }> {
+  const files = fs.readdirSync(sourceDir, { withFileTypes: true });
+  let fileCount = 0;
+  let imageResourceDocCount = 0;
+
+  for (const file of files) {
+    const sourcePath = path.join(sourceDir, file.name);
+    const correspondingMdFile = path.join(sourceDir, `${file.name}.md`);
+    const isImageResourceDir = fs.existsSync(correspondingMdFile);
+
+    if (file.isDirectory()) {
+      // 如果存在同名的markdown文件，则认为这是一个图片资源目录
+      if (isImageResourceDir) {
+        imageResourceDocCount++;
+      }
+
+      // 如果只计算markdown文件，检查是否有同名的markdown文件
+      if (markdownOnly && isImageResourceDir) {
+        continue; // 跳过存在同名markdown文件的目录
+      }
+
+      // 递归处理子目录
+      const subCounts = await countFilesAndDocsWithImageResources(sourcePath, markdownOnly);
+      fileCount += subCounts.fileCount;
+      // 只有当当前目录不是图片资源目录时，才累加子目录的imageResourceDocCount
+      if (!isImageResourceDir) {
+        imageResourceDocCount += subCounts.imageResourceDocCount;
+      }
+    } else {
+      // 如果是文件，根据参数决定是否只计算markdown文件
+      if (markdownOnly && !file.name.endsWith(".md")) {
+        continue; // 跳过非markdown文件
+      }
+      fileCount++;
+    }
+  }
+
+  return { fileCount, imageResourceDocCount };
+}
+
+/**
  * @brief 执行图片资源复制操作
  * @param {Array<{ sourcePath: string; targetPath: string; fileCount: number }>} imageCopyTasks - 图片复制任务列表
  * @return {Promise<void>} 无返回值
@@ -123,7 +173,7 @@ async function showPreviewAndConfirm(
   }
   console.log(`\n📊 统计信息:`);
   console.log(`   总文件数量:    ${totalFileCount}`);
-  console.log(`   总图片数量:    ${totalImageCount}`);
+  console.log(`   拥有图片资源的文档数量:    ${totalImageCount}`);
   console.log("=".repeat(50) + "\n");
 
   // 提示用户确认
@@ -267,8 +317,9 @@ async function moveDocs(configPath: string, options: CommandOptions = {}): Promi
       }
 
       // 9. 计算文件数量（不实际复制）
-      const fileCount = await countFiles(sourcePath, true); // 只计算markdown文件
-      const imageCount = await countFiles(sourcePath, false); // 计算所有文件
+      const counts = await countFilesAndDocsWithImageResources(sourcePath, true); // 同时计算markdown文件数量和拥有图片资源目录的文档数量
+      const fileCount = counts.fileCount;
+      const imageCount = counts.imageResourceDocCount;
       totalFileCount += fileCount;
       totalImageCount += imageCount;
 
@@ -370,44 +421,6 @@ async function copyMarkdownFiles(
 
       // 处理复制后的文件中的图片路径
       await convertImagePathsToOSS(targetPath, skippedFiles);
-      fileCount++;
-    }
-  }
-
-  return fileCount;
-}
-
-/**
- * @brief 递归计算目录中的文件数量
- * @param {string} sourceDir - 源目录
- * @param {boolean} markdownOnly - 是否只计算markdown文件
- * @return {Promise<number>} 文件数量
- * @async
- */
-async function countFiles(sourceDir: string, markdownOnly: boolean = false): Promise<number> {
-  const files = fs.readdirSync(sourceDir, { withFileTypes: true });
-  let fileCount = 0;
-
-  for (const file of files) {
-    const sourcePath = path.join(sourceDir, file.name);
-
-    if (file.isDirectory()) {
-      // 如果只计算markdown文件，检查是否有同名的markdown文件
-      if (markdownOnly) {
-        const correspondingMdFile = path.join(sourceDir, `${file.name}.md`);
-        if (fs.existsSync(correspondingMdFile)) {
-          continue; // 跳过存在同名markdown文件的目录
-        }
-      }
-
-      // 如果是目录，递归处理
-      const dirFileCount = await countFiles(sourcePath, markdownOnly);
-      fileCount += dirFileCount;
-    } else {
-      // 如果是文件，根据参数决定是否只计算markdown文件
-      if (markdownOnly && !file.name.endsWith(".md")) {
-        continue; // 跳过非markdown文件
-      }
       fileCount++;
     }
   }
