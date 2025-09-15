@@ -253,7 +253,13 @@ function convertImagePathToOSS(imgPath: string, relativePath: string, rootDirNam
   }
   const adjustedDirPath = pathParts.join("/");
   const normalizedImgPath = (imgPath.startsWith("./") ? imgPath.substring(2) : imgPath).split(path.sep).join("/");
-  return `${OSS_BASE_URL}${rootDirName}/${adjustedDirPath}/${normalizedImgPath}`;
+
+  // 对路径部分进行URL编码
+  const encodedRootDirName = encodeURIComponent(rootDirName);
+  const encodedAdjustedDirPath = adjustedDirPath.split("/").map(encodeURIComponent).join("/");
+  const encodedNormalizedImgPath = normalizedImgPath.split("/").map(encodeURIComponent).join("/");
+
+  return `${OSS_BASE_URL}${encodedRootDirName}/${encodedAdjustedDirPath}/${encodedNormalizedImgPath}`;
 }
 
 /**
