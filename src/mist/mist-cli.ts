@@ -171,17 +171,17 @@ async function cloneProjectTemplate(): Promise<void> {
 function getConfigReplacementRules(params: UpdateConfigParams): ConfigReplacementRule[] {
   return [
     {
-      search: /title:\s*"[^"]*"/,
+      search: /title:\s*(["'])([^"']*)\1/,
       replace: `title: "${params.title}"`,
       description: "更新站点标题"
     },
     {
-      search: /description:\s*"[^"]*"/,
+      search: /description:\s*(["'])([^"']*)\1/,
       replace: `description: "${params.description}"`,
       description: "更新站点描述"
     },
     {
-      search: /base:\s*'\/vitepress-theme-mist-docs\/'/,
+      search: /base:\s*(["'])\/vitepress-theme-mist-docs\/\1/,
       replace: `base: '/${params.dirName}/'`,
       description: "更新base URL"
     },
