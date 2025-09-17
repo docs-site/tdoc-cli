@@ -57,10 +57,10 @@ async function getGitMarkdownFiles(dirPath: string, recursive: boolean = false):
   const rootDir = await validateGitRepository(dirPath);
   const status = await git.status();
 
-  // 合并修改和未跟踪的文件
-  const allFiles = [...status.modified, ...status.not_added, ...status.created];
+  // 合并修改和未跟踪的文件，并去重
+  const allFiles = [...new Set([...status.modified, ...status.not_added, ...status.created])];
 
-  return allFiles
+  const filteredFiles = allFiles
     .filter((file) => {
       // 只处理.md文件
       if (!file.endsWith(".md")) {
@@ -94,6 +94,9 @@ async function getGitMarkdownFiles(dirPath: string, recursive: boolean = false):
       }
     })
     .map((file) => path.resolve(rootDir, file));
+
+  // 再次去重，确保返回的文件路径唯一
+  return [...new Set(filteredFiles)];
 }
 
 /**
