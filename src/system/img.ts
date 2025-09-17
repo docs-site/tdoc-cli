@@ -213,7 +213,14 @@ async function processImagePaths(filePath: string, debugMode = false, transformM
     });
 
     rl.on("close", () => {
-      fs.writeFile(filePath, outputLines.join("\n"), (err: NodeJS.ErrnoException | null) => {
+      let content = outputLines.join("\n");
+
+      // 确保文件末尾有一个Unix风格的新行
+      if (!content.endsWith("\n")) {
+        content += "\n";
+      }
+
+      fs.writeFile(filePath, content, (err: NodeJS.ErrnoException | null) => {
         if (err) {
           reject(err);
         } else {
