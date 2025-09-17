@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.2.2](https://github.com/docs-site/tdoc-cli/compare/v1.2.0...v1.2.2) (2025-09-17)
+
+### Bug Fixes
+
+- **system:** 🐞 修复img命令扫描文件可能出现重复的问题 ([bc41dc1](https://github.com/docs-site/tdoc-cli/commit/bc41dc162975ac3bbc29198457f99d846aa12296))
+
+### Others
+
+- **release:** 1.2.1 [publish] ([6c0821f](https://github.com/docs-site/tdoc-cli/commit/6c0821fc67508bcad45d95038721e8834814f473))
+
+### Code Refactoring
+
+- **system:** ♻️ img处理后的文档保证尾部至少有一个新行 ([d2eca3c](https://github.com/docs-site/tdoc-cli/commit/d2eca3c7f52229a036814ca61dfa588eaa3cb65f))
+- **system:** ♻️ img命令添加-a递归处理模式并优化代码逻辑 ([3418f94](https://github.com/docs-site/tdoc-cli/commit/3418f9485f39827c9e041436fe46c64d735c9376))
+
 ### [1.2.1](https://github.com/docs-site/tdoc-cli/compare/v1.2.0...v1.2.1) (2025-09-17)
 
 ### Bug Fixes
