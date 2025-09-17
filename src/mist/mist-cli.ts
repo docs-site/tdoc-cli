@@ -14,6 +14,7 @@ import path from "path";
 import { execSync } from "child_process";
 import { input, confirm } from "@inquirer/prompts";
 import { ConfigReplacementRule, UpdateConfigParams } from "./types";
+import { createDocsCommand } from "./cmd_docs";
 
 /**
  * @brief 从GitHub模板初始化Vitepress站点
@@ -306,6 +307,9 @@ function createMistCommand(): Command {
         process.exit(1);
       }
     });
+
+  // 添加docs子命令
+  program.addCommand(createDocsCommand());
 
   return program;
 }
