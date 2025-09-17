@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.2.4](https://github.com/docs-site/tdoc-cli/compare/v1.2.0...v1.2.4) (2025-09-17)
+
+### Features
+
+- **mist:** 🚀 添加docs命令用于备份文档资源 ([6fa1bd0](https://github.com/docs-site/tdoc-cli/commit/6fa1bd065df10e5a2f0a1c58df7858c52279c925))
+
+### Bug Fixes
+
+- **mist:** 🐞 修复mist docs命令debug模式异常问题 ([70088e4](https://github.com/docs-site/tdoc-cli/commit/70088e459863a6f6268104a2e80a12a45e741516))
+- **system:** 🐞 修复img命令扫描文件可能出现重复的问题 ([bc41dc1](https://github.com/docs-site/tdoc-cli/commit/bc41dc162975ac3bbc29198457f99d846aa12296))
+
+### Code Refactoring
+
+- **mist:** ♻️ mist init命令独立成文件 ([4c3fb1b](https://github.com/docs-site/tdoc-cli/commit/4c3fb1b1b58fa4c39718a0e7a75d930eb78b1abb))
+- **system:** ♻️ img处理后的文档保证尾部至少有一个新行 ([d2eca3c](https://github.com/docs-site/tdoc-cli/commit/d2eca3c7f52229a036814ca61dfa588eaa3cb65f))
+- **system:** ♻️ img命令添加-a递归处理模式并优化代码逻辑 ([3418f94](https://github.com/docs-site/tdoc-cli/commit/3418f9485f39827c9e041436fe46c64d735c9376))
+
+### Others
+
+- **release:** 1.2.1 [publish] ([6c0821f](https://github.com/docs-site/tdoc-cli/commit/6c0821fc67508bcad45d95038721e8834814f473))
+- **release:** 1.2.2 [publish] ([34f1a18](https://github.com/docs-site/tdoc-cli/commit/34f1a186883813dfea6f7e1a1ff086ad52f59c6f))
+- **release:** 1.2.3 [publish] ([726228c](https://github.com/docs-site/tdoc-cli/commit/726228c1c344dabd62bd9448e2236bed04ab932d))
+
 ### [1.2.3](https://github.com/docs-site/tdoc-cli/compare/v1.2.0...v1.2.3) (2025-09-17)
 
 ### Features
