@@ -40,15 +40,24 @@ function createDirectoryIfNotExists(dirPath: string, baseDir: string = ""): numb
  * @param relativePath - 相对路径（用于日志显示）
  * @returns 是否成功复制
  */
-function copyFileWithBackup(sourceFile: string, targetFile: string, relativePath: string): boolean {
+function copyFileWithBackup(
+  sourceFile: string,
+  targetFile: string,
+  relativePath: string,
+  debugMode: boolean = false
+): boolean {
   try {
     // 检查目标文件是否已存在
     if (fs.existsSync(targetFile)) {
-      console.log(`⚠️  文件已存在，将覆盖: ${relativePath}`);
+      if (debugMode) {
+        console.log(`  ⚠️  文件已存在，将覆盖: ${relativePath}`);
+      }
     }
 
     fs.copyFileSync(sourceFile, targetFile);
-    console.log(`✅ 已备份: ${relativePath}`);
+    if (debugMode) {
+      console.log(`  ✅ 已备份: ${relativePath}`);
+    }
     return true;
   } catch (copyError) {
     console.error(`❌ 备份失败: ${relativePath} - ${(copyError as Error).message}`);
@@ -89,7 +98,8 @@ function findAndBackupFiles(
   dir: string,
   sourceDirPath: string,
   targetBackupDir: string,
-  stats: { totalFilesFound: number; totalFilesCopied: number; totalDirsCreated: number }
+  stats: { totalFilesFound: number; totalFilesCopied: number; totalDirsCreated: number },
+  debugMode: boolean = false
 ): void {
   const items = fs.readdirSync(dir, { withFileTypes: true });
 
@@ -98,7 +108,7 @@ function findAndBackupFiles(
 
     if (item.isDirectory()) {
       // 递归处理子目录
-      findAndBackupFiles(fullPath, sourceDirPath, targetBackupDir, stats);
+      findAndBackupFiles(fullPath, sourceDirPath, targetBackupDir, stats, debugMode);
     } else if (item.isFile()) {
       const ext = path.extname(item.name).toLowerCase();
 
@@ -115,7 +125,7 @@ function findAndBackupFiles(
         stats.totalDirsCreated += createDirectoryIfNotExists(targetDir, targetBackupDir);
 
         // 拷贝文件
-        if (copyFileWithBackup(fullPath, targetFilePath, relativePath)) {
+        if (copyFileWithBackup(fullPath, targetFilePath, relativePath, debugMode)) {
           stats.totalFilesCopied++;
         }
       }
@@ -182,7 +192,7 @@ function backupOfficeDocuments(debugMode: boolean = false, backupDir?: string): 
 
     // 递归查找并备份目标文件
     console.log("🔍 正在查找目标文件...");
-    findAndBackupFiles(sourceDirPath, sourceDirPath, targetBackupDir, stats);
+    findAndBackupFiles(sourceDirPath, sourceDirPath, targetBackupDir, stats, debugMode);
     console.log(`   - 找到目标文件: ${stats.totalFilesFound} 个`);
 
     console.log("─".repeat(50));
