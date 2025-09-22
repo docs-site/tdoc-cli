@@ -9,6 +9,22 @@ import { Command } from "commander";
 const devDependencies: string[] = ["@types/node"];
 const dependencies: string[] = [];
 
+// 获取依赖的最新版本
+function getLatestVersion(dependency: string): string {
+  try {
+    // 使用npm view命令获取依赖的最新版本
+    const version = execSync(`npm view ${dependency} version`, {
+      encoding: "utf8",
+      stdio: ["pipe", "pipe", "ignore"]
+    }).trim();
+    return `^${version}`;
+  } catch {
+    // 如果获取失败，使用latest
+    console.warn(`Failed to get latest version for ${dependency}, using 'latest'`);
+    return "latest";
+  }
+}
+
 // 定义用户配置接口
 interface UserConfig {
   name: string;
@@ -22,6 +38,7 @@ interface UserConfig {
   addPrettierConfig: boolean;
   installDeps: boolean;
   installHusky: boolean;
+  installCommitizen: boolean;
 }
 
 /**
@@ -106,6 +123,14 @@ async function collectUserInput(dirName?: string, yes = false, scope?: string) {
         default: true
       });
 
+  const installCommitizen =
+    yes || !initGit
+      ? false
+      : await confirm({
+          message: "Install commitizen with cz-git for conventional commits?",
+          default: true
+        });
+
   const installHusky =
     yes || !initGit
       ? false
@@ -142,9 +167,9 @@ async function collectUserInput(dirName?: string, yes = false, scope?: string) {
         default: true
       });
 
-  const installDeps = yes ? false : await confirmDependencies();
+  const installDeps = yes ? false : true; // 默认为true，后续会根据confirmDependencies的结果更新
 
-  return {
+  const answers = {
     name,
     description,
     author,
@@ -155,21 +180,36 @@ async function collectUserInput(dirName?: string, yes = false, scope?: string) {
     addEditorConfig,
     addVscodeConfig,
     addPrettierConfig,
-    installDeps
+    installDeps,
+    installCommitizen
   };
+
+  // 确认依赖安装选择
+  if (!yes) {
+    answers.installDeps = await confirmDependencies(answers);
+  }
+
+  return answers;
 }
 
 /**
  * @brief 确认依赖安装选择
+ * @param {UserConfig} answers - 用户配置对象
  * @returns {Promise<boolean>} 用户是否选择安装依赖
  */
-async function confirmDependencies() {
-  const showDevDeps = [...devDependencies];
-  const showDeps = [...dependencies];
+async function confirmDependencies(answers: UserConfig) {
+  // 准备要安装的依赖列表
+  const installDevDeps = [...devDependencies]; // 开发依赖
+  const installDeps = [...dependencies]; // 生产依赖
 
-  console.log("\nWill install the following basic common dependencies:");
-  console.log(`  devDependencies: ${showDevDeps.join(", ")}`);
-  console.log(`  dependencies: ${showDeps.join(", ") || "none"}`);
+  // 添加commitizen相关依赖
+  if (answers.installCommitizen) {
+    installDevDeps.push("commitizen", "cz-git", "@commitlint/config-conventional");
+  }
+
+  console.log("\nWill install the following dependencies:");
+  console.log(`  devDependencies: ${installDevDeps.join(", ")}`);
+  console.log(`  dependencies: ${installDeps.join(", ") || "none"}`);
   console.log();
   return await confirm({
     message: "Install dependencies automatically?",
@@ -265,6 +305,15 @@ function copyTemplateFiles(projectDir: string, answers: UserConfig) {
     }
     devDependencies.push("prettier");
   }
+
+  // 拷贝commitlint.config.js文件
+  if (answers.installCommitizen) {
+    const commitlintConfigPath = path.join(__dirname, "../../commitlint.config.js");
+    if (fs.existsSync(commitlintConfigPath)) {
+      fs.copyFileSync(commitlintConfigPath, path.join(projectDir, "commitlint.config.js"));
+      console.log("✅ commitlint.config.js copied");
+    }
+  }
 }
 
 /**
@@ -288,8 +337,84 @@ function createPackageJson(projectDir: string, answers: UserConfig, scope?: stri
   packageJson.author = answers.author;
   packageJson.license = answers.license;
 
+  // 添加commitizen配置
+  if (answers.installCommitizen) {
+    packageJson.config = {
+      commitizen: {
+        path: "node_modules/cz-git"
+      }
+    };
+
+    // 添加cz脚本命令
+    if (!packageJson.scripts) {
+      packageJson.scripts = {};
+    }
+    packageJson.scripts.cz = "git add . && git-cz";
+  }
+
+  // 添加commitizen配置
+  if (answers.installCommitizen) {
+    packageJson.config = {
+      commitizen: {
+        path: "node_modules/cz-git"
+      }
+    };
+
+    // 添加cz脚本命令
+    if (!packageJson.scripts) {
+      packageJson.scripts = {};
+    }
+    packageJson.scripts.cz = "git add . && git-cz";
+  }
+
   // 将package.json写入文件，使用2个空格缩进
   fs.writeFileSync(path.join(projectDir, "package.json"), JSON.stringify(packageJson, null, 2));
+}
+
+/**
+ * @brief 更新package.json文件，添加依赖信息
+ * @param {string} projectDir - 项目目录路径
+ * @param {UserConfig} answers - 用户配置对象
+ */
+function updatePackageJsonWithDependencies(projectDir: string, answers: UserConfig) {
+  // 读取现有的package.json文件
+  const packageJsonPath = path.join(projectDir, "package.json");
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+
+  // 准备要安装的依赖列表
+  const installDevDeps: Record<string, string> = {}; // 开发依赖
+  const installDeps: Record<string, string> = {}; // 生产依赖
+
+  // 添加基本依赖
+  devDependencies.forEach((dep) => {
+    installDevDeps[dep] = getLatestVersion(dep);
+  });
+  dependencies.forEach((dep) => {
+    installDeps[dep] = getLatestVersion(dep);
+  });
+
+  // 添加commitizen相关依赖
+  if (answers.installCommitizen) {
+    installDevDeps["commitizen"] = getLatestVersion("commitizen");
+    installDevDeps["cz-git"] = getLatestVersion("cz-git");
+    installDevDeps["@commitlint/config-conventional"] = getLatestVersion("@commitlint/config-conventional");
+  }
+
+  // 添加Prettier依赖
+  if (answers.addPrettierConfig) {
+    installDevDeps["prettier"] = getLatestVersion("prettier");
+  }
+
+  // 添加依赖到package.json
+  if (Object.keys(installDevDeps).length > 0) {
+    packageJson.devDependencies = installDevDeps;
+  }
+  if (Object.keys(installDeps).length > 0) {
+    packageJson.dependencies = installDeps;
+  }
+
+  // 将更新后的package.json写入文件
+  fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
 }
 
 /**
@@ -297,29 +422,14 @@ function createPackageJson(projectDir: string, answers: UserConfig, scope?: stri
  * @param {string} projectDir - 项目目录路径
  * @throws 如果npm安装失败会抛出错误
  */
-function installDependencies() {
+function installDependencies(projectDir: string) {
   try {
     console.log("Installing dependencies...");
-
-    // 准备要安装的依赖列表
-    const installDevDeps = [...devDependencies]; // 开发依赖
-    const installDeps = [...dependencies]; // 生产依赖
-
-    // 安装开发依赖
-    if (installDevDeps.length) {
-      console.log(`  devDependencies: ${installDevDeps.join(", ")}`);
-      // 使用npm install -D安装开发依赖
-      execSync(`npm install ${installDevDeps.join(" ")} -D`, {
-        stdio: "inherit"
-      });
-    }
-
-    // 安装生产依赖
-    if (installDeps.length) {
-      console.log(`  dependencies: ${installDeps.join(", ")}`);
-      // 使用npm install安装生产依赖
-      execSync(`npm install ${installDeps.join(" ")}`, { stdio: "inherit" });
-    }
+    // 直接执行npm install安装所有依赖
+    execSync("npm install", {
+      stdio: "inherit",
+      cwd: projectDir
+    });
   } catch (err) {
     console.error("Failed to install dependencies:", err);
   }
@@ -367,9 +477,13 @@ export async function cmdInit(dirName?: string, skipPrompts = false, yes = false
     }
   }
 
+  // 更新package.json文件，添加依赖信息
+  console.log("Adding dependencies to package.json...");
+  updatePackageJsonWithDependencies(projectDir, answers);
+
   // 安装依赖
   if (answers.installDeps) {
-    installDependencies();
+    installDependencies(projectDir);
   }
 
   console.log(`\n✅ Project ${answers.name} initialized successfully!`);
