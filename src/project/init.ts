@@ -1,82 +1,21 @@
-// 导入必要的模块
 import { input, confirm, select } from "@inquirer/prompts";
-import fs from "fs-extra";
-import path from "path";
-import { execSync } from "child_process";
 import { Command } from "commander";
-
-// 定义默认依赖项
-const devDependencies: string[] = ["@types/node"];
-const dependencies: string[] = [];
-
-// 获取依赖的最新版本
-function getLatestVersion(dependency: string): string {
-  try {
-    // 使用npm view命令获取依赖的最新版本
-    const version = execSync(`npm view ${dependency} version`, {
-      encoding: "utf8",
-      stdio: ["pipe", "pipe", "ignore"]
-    }).trim();
-    return `^${version}`;
-  } catch {
-    // 如果获取失败，使用latest
-    console.warn(`Failed to get latest version for ${dependency}, using 'latest'`);
-    return "latest";
-  }
-}
-
-// 定义用户配置接口
-interface UserConfig {
-  name: string;
-  description: string;
-  author: string;
-  license: string;
-  initGit: boolean;
-  addWorkflow: boolean;
-  addEditorConfig: boolean;
-  addVscodeConfig: boolean;
-  addPrettierConfig: boolean;
-  installDeps: boolean;
-  installHusky: boolean;
-  installCommitizen: boolean;
-  installCommitlint: boolean;
-}
+import path from "path";
+import { UserConfig, ProjectType } from "./types";
+import { createProjectDir, confirmDependencies, installDependencies } from "./helper";
+import { initGitRepo, installHusky } from "./git";
+import { createPackageJson, updatePackageJsonWithDependencies } from "./package";
+import { copyTemplateFiles } from "./templates";
 
 /**
- * @brief 创建并验证项目目录结构
- * @param {string} [dirName] - 可选的项目目录名
- * @returns {string} 项目绝对路径
- * @throws 如果目录已存在且不为空则退出进程
+ * 收集用户项目配置输入
+ * @param dirName 可选的项目目录名
+ * @param yes 是否自动使用默认值
+ * @param scope 可选的npm包作用域
+ * @param projectType 项目类型
+ * @returns 包含用户配置的对象
  */
-function createProjectDir(dirName?: string): string {
-  // 解析项目绝对路径，如果没有指定目录名则使用当前目录
-  const projectDir = path.resolve(dirName || "");
-
-  // 检查目录是否已存在
-  if (fs.existsSync(projectDir)) {
-    // 如果目录存在，检查是否为空
-    const files = fs.readdirSync(projectDir);
-    if (files.length > 0) {
-      // 目录不为空，报错并退出
-      console.error(`❌ 目录 ${projectDir} 已存在且不为空`);
-      process.exit(1);
-    }
-  } else {
-    // 目录不存在，递归创建目录
-    fs.mkdirSync(projectDir, { recursive: true });
-  }
-
-  return projectDir;
-}
-
-/**
- * @brief 收集用户项目配置输入
- * @param {string} [dirName] - 可选的项目目录名
- * @param {boolean} [yes=false] - 是否自动使用默认值
- * @param {string} [scope] - 可选的npm包作用域
- * @returns {Promise<Object>} 包含用户配置的对象
- */
-async function collectUserInput(dirName?: string, yes = false, scope?: string, projectType?: string) {
+async function collectUserInput(dirName?: string, yes = false, scope?: string, projectType?: ProjectType) {
   // 自动模式使用默认值，否则通过交互式提示获取用户输入
   const name = yes
     ? dirName
@@ -181,7 +120,7 @@ async function collectUserInput(dirName?: string, yes = false, scope?: string, p
 
   const installDeps = yes ? false : true; // 默认为true，后续会根据confirmDependencies的结果更新
 
-  const answers = {
+  const answers: UserConfig = {
     name,
     description,
     author,
@@ -206,292 +145,20 @@ async function collectUserInput(dirName?: string, yes = false, scope?: string, p
 }
 
 /**
- * @brief 确认依赖安装选择
- * @param {UserConfig} answers - 用户配置对象
- * @returns {Promise<boolean>} 用户是否选择安装依赖
- */
-async function confirmDependencies(answers: UserConfig) {
-  // 准备要安装的依赖列表
-  const installDevDeps = [...devDependencies]; // 开发依赖
-  const installDeps = [...dependencies]; // 生产依赖
-
-  // 添加commitizen相关依赖
-  if (answers.installCommitizen) {
-    installDevDeps.push("commitizen", "cz-git", "@commitlint/config-conventional");
-  }
-
-  // 添加commitlint相关依赖
-  if (answers.installCommitlint) {
-    installDevDeps.push("@commitlint/config-conventional");
-  }
-
-  console.log("\nWill install the following dependencies:");
-  console.log(`  devDependencies: ${installDevDeps.join(", ")}`);
-  console.log(`  dependencies: ${installDeps.join(", ") || "none"}`);
-  console.log();
-  return await confirm({
-    message: "Install dependencies automatically?",
-    default: false
-  });
-}
-
-/**
- * @brief 初始化Git仓库并配置
- * @param {string} projectDir - 项目目录路径
- * @param {boolean} addWorkflow - 是否添加GitHub工作流
- * @throws 如果git初始化失败会抛出错误
- */
-function initGitRepo(projectDir: string, addWorkflow: boolean, projectType?: string) {
-  try {
-    // 初始化Git仓库，使用pipe模式隐藏git命令输出
-    execSync("git init", { stdio: "pipe" });
-    console.log("✅ Git repository initialized");
-
-    // 创建.gitignore文件，忽略常见不需要版本控制的文件
-    fs.writeFileSync(path.join(projectDir, ".gitignore"), "node_modules/\n.DS_Store\n.env\n");
-
-    // 如果需要添加GitHub工作流
-    if (addWorkflow && projectType !== "c") {
-      const workflowsDir = path.join(__dirname, "../../.github/workflows");
-      if (fs.existsSync(workflowsDir)) {
-        // 创建工作流目录并复制模板文件
-        const destDir = path.join(projectDir, ".github/workflows");
-        fs.ensureDirSync(destDir);
-        fs.copySync(workflowsDir, destDir);
-        console.log("✅ GitHub Actions workflow files copied");
-      } else {
-        console.log("ℹ️ No workflow files found in .github/workflows");
-      }
-    }
-  } catch (err) {
-    console.error("Failed to initialize git repository:", err);
-  }
-}
-
-/**
- * @brief 复制各种项目模板文件
- * @param {string} projectDir - 项目目录路径
- * @param {Object} answers - 用户配置对象
- */
-function copyTemplateFiles(projectDir: string, answers: UserConfig, projectType?: string) {
-  // 处理README文件：
-  // 1. 尝试从模板目录读取README模板
-  const readmeTemplatePath = path.join(__dirname, "../../npm-template/README.md");
-  if (fs.existsSync(readmeTemplatePath)) {
-    // 读取模板内容并替换占位符
-    let readmeContent = fs.readFileSync(readmeTemplatePath, "utf8");
-    readmeContent = readmeContent.replace(/\{\{\s*title\s*\}\}/g, answers.name);
-    fs.writeFileSync(path.join(projectDir, "README.md"), readmeContent);
-  } else {
-    // 模板不存在时创建基础README
-    fs.writeFileSync(
-      path.join(projectDir, "README.md"),
-      `# ${answers.name}\n\n${answers.description || "Project description"}`
-    );
-  }
-
-  // 处理.gitignore文件
-  if (projectType === "c") {
-    // C语言项目使用特定的.gitignore模板
-    const gitignoreTemplatePath = path.join(__dirname, "../../npm-template/c.gitignore");
-    if (fs.existsSync(gitignoreTemplatePath)) {
-      fs.copyFileSync(gitignoreTemplatePath, path.join(projectDir, ".gitignore"));
-      console.log("✅ .gitignore copied from c.gitignore template");
-    }
-  } else {
-    // 其他项目类型使用默认的.gitignore
-    fs.writeFileSync(path.join(projectDir, ".gitignore"), "node_modules/\n.DS_Store\n.env\n");
-  }
-
-  // 复制.editorconfig
-  if (answers.addEditorConfig) {
-    const editorConfigPath = path.join(__dirname, "../../.editorconfig");
-    if (fs.existsSync(editorConfigPath)) {
-      fs.copyFileSync(editorConfigPath, path.join(projectDir, ".editorconfig"));
-      console.log("✅ .editorconfig copied");
-    }
-  }
-
-  // 复制.vscode配置
-  if (answers.addVscodeConfig && projectType !== "c") {
-    const vscodePath = path.join(__dirname, "../../.vscode");
-    if (fs.existsSync(vscodePath)) {
-      fs.copySync(vscodePath, path.join(projectDir, ".vscode"));
-      console.log("✅ .vscode configuration copied");
-    }
-  }
-
-  // 复制Prettier配置
-  if (answers.addPrettierConfig && projectType !== "c") {
-    const prettierRcPath = path.join(__dirname, "../../.prettierrc");
-    const prettierIgnorePath = path.join(__dirname, "../../.prettierignore");
-
-    if (fs.existsSync(prettierRcPath)) {
-      fs.copyFileSync(prettierRcPath, path.join(projectDir, ".prettierrc"));
-      console.log("✅ .prettierrc copied");
-    }
-    if (fs.existsSync(prettierIgnorePath)) {
-      fs.copyFileSync(prettierIgnorePath, path.join(projectDir, ".prettierignore"));
-      console.log("✅ .prettierignore copied");
-    }
-    devDependencies.push("prettier");
-  }
-
-  // 拷贝commitlint.config.js文件
-  if (answers.installCommitizen) {
-    const commitlintConfigPath = path.join(__dirname, "../../commitlint.config.js");
-    if (fs.existsSync(commitlintConfigPath)) {
-      fs.copyFileSync(commitlintConfigPath, path.join(projectDir, "commitlint.config.js"));
-      console.log("✅ commitlint.config.js copied");
-    }
-  }
-}
-
-/**
- * @brief 创建package.json文件
- * @param {string} projectDir - 项目目录路径
- * @param {Object} answers - 用户配置对象
- * @param {string} [scope] - 可选的npm包作用域
- */
-function createPackageJson(projectDir: string, answers: UserConfig, scope?: string) {
-  // 从npm-template/package-template.json读取模板
-  const templatePath = path.join(__dirname, "../../npm-template/package-template.json");
-  const packageJson = JSON.parse(fs.readFileSync(templatePath, "utf8"));
-
-  // 处理包名：如果有作用域则添加作用域前缀
-  packageJson.name = scope
-    ? `@${scope}/${answers.name.toLowerCase().replace(/\s+/g, "-")}`
-    : answers.name.toLowerCase().replace(/\s+/g, "-");
-
-  // 替换其他字段
-  packageJson.description = answers.description;
-  packageJson.author = answers.author;
-  packageJson.license = answers.license;
-
-  // 添加commitizen配置
-  if (answers.installCommitizen) {
-    packageJson.config = {
-      commitizen: {
-        path: "node_modules/cz-git"
-      }
-    };
-
-    // 添加cz脚本命令
-    if (!packageJson.scripts) {
-      packageJson.scripts = {};
-    }
-    packageJson.scripts.cz = "git add . && git-cz";
-  }
-
-  // 添加commitizen配置
-  if (answers.installCommitizen) {
-    packageJson.config = {
-      commitizen: {
-        path: "node_modules/cz-git"
-      }
-    };
-
-    // 添加cz脚本命令
-    if (!packageJson.scripts) {
-      packageJson.scripts = {};
-    }
-    packageJson.scripts.cz = "git add . && git-cz";
-  }
-
-  // 将package.json写入文件，使用2个空格缩进
-  fs.writeFileSync(path.join(projectDir, "package.json"), JSON.stringify(packageJson, null, 2));
-}
-
-/**
- * @brief 更新package.json文件，添加依赖信息
- * @param {string} projectDir - 项目目录路径
- * @param {UserConfig} answers - 用户配置对象
- */
-function updatePackageJsonWithDependencies(projectDir: string, answers: UserConfig) {
-  // 读取现有的package.json文件
-  const packageJsonPath = path.join(projectDir, "package.json");
-  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
-
-  // 准备要安装的依赖列表
-  const installDevDeps: Record<string, string> = {}; // 开发依赖
-  const installDeps: Record<string, string> = {}; // 生产依赖
-
-  // 添加基本依赖
-  devDependencies.forEach((dep) => {
-    installDevDeps[dep] = getLatestVersion(dep);
-  });
-  dependencies.forEach((dep) => {
-    installDeps[dep] = getLatestVersion(dep);
-  });
-
-  // 添加commitizen相关依赖
-  if (answers.installCommitizen) {
-    installDevDeps["commitizen"] = getLatestVersion("commitizen");
-    installDevDeps["cz-git"] = getLatestVersion("cz-git");
-    installDevDeps["@commitlint/config-conventional"] = getLatestVersion("@commitlint/config-conventional");
-  }
-
-  // 添加Prettier依赖
-  if (answers.addPrettierConfig) {
-    installDevDeps["prettier"] = getLatestVersion("prettier");
-  }
-
-  // 添加commitlint依赖
-  if (answers.installCommitlint) {
-    installDevDeps["@commitlint/cli"] = getLatestVersion("@commitlint/cli");
-    installDevDeps["@commitlint/config-conventional"] = getLatestVersion("@commitlint/config-conventional");
-  }
-
-  // 添加依赖到package.json，保留原有的依赖项
-  if (Object.keys(installDevDeps).length > 0) {
-    packageJson.devDependencies = {
-      ...packageJson.devDependencies, // 保留原有的devDependencies
-      ...installDevDeps // 添加新的devDependencies
-    };
-  }
-  if (Object.keys(installDeps).length > 0) {
-    packageJson.dependencies = {
-      ...packageJson.dependencies, // 保留原有的dependencies
-      ...installDeps // 添加新的dependencies
-    };
-  }
-
-  // 将更新后的package.json写入文件
-  fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
-}
-
-/**
- * @brief 安装项目依赖
- * @param {string} projectDir - 项目目录路径
- * @throws 如果npm安装失败会抛出错误
- */
-function installDependencies(projectDir: string) {
-  try {
-    console.log("Installing dependencies...");
-    // 直接执行npm install安装所有依赖
-    execSync("npm install", {
-      stdio: "inherit",
-      cwd: projectDir
-    });
-  } catch (err) {
-    console.error("Failed to install dependencies:", err);
-  }
-}
-
-/**
- * @brief 项目初始化主命令
- * @param {string} [dirName] - 可选的项目目录名
- * @param {boolean} [skipPrompts=false] - 是否跳过交互式提示
- * @param {boolean} [yes=false] - 是否自动选择默认值
- * @param {string} [scope] - 可选的npm包作用域
- * @returns {Promise<void>}
+ * 项目初始化主命令
+ * @param dirName 可选的项目目录名
+ * @param skipPrompts 是否跳过交互式提示
+ * @param yes 是否自动选择默认值
+ * @param scope 可选的npm包作用域
+ * @param projectType 项目类型
+ * @returns Promise<void>
  */
 export async function cmdInit(
   dirName?: string,
   skipPrompts = false,
   yes = false,
   scope?: string,
-  projectType?: string
+  projectType?: ProjectType
 ) {
   console.log("Welcome to tdoc project initialization\n");
 
@@ -517,45 +184,7 @@ export async function cmdInit(
 
   // 安装husky
   if (answers.installHusky && answers.initGit) {
-    try {
-      console.log("Installing husky...");
-      execSync("npx husky-init", { stdio: "inherit" });
-      console.log("✅ Husky installed successfully!");
-    } catch (err) {
-      console.error("Failed to install husky:", err);
-    }
-
-    // 添加commitlint钩子
-    if (answers.installCommitlint) {
-      try {
-        console.log("Adding commitlint hook...");
-        const commitMsgPath = path.join(projectDir, ".husky", "commit-msg");
-        const commitMsgContent = "npx --no-install commitlint --edit $1\n";
-
-        // 确保.husky目录存在
-        fs.ensureDirSync(path.join(projectDir, ".husky"));
-
-        // 如果文件已存在，则追加内容，否则创建新文件
-        if (fs.existsSync(commitMsgPath)) {
-          // 读取现有内容
-          const existingContent = fs.readFileSync(commitMsgPath, "utf8");
-          // 检查是否已包含该命令
-          if (!existingContent.includes("npx --no-install commitlint --edit $1")) {
-            fs.appendFileSync(commitMsgPath, commitMsgContent);
-          }
-        } else {
-          // 创建新文件，添加shebang和命令
-          fs.writeFileSync(commitMsgPath, `#!/usr/bin/env sh\n${commitMsgContent}`);
-        }
-
-        // 确保文件具有可执行权限
-        fs.chmodSync(commitMsgPath, 0o755);
-
-        console.log("✅ Commitlint hook added successfully!");
-      } catch (err) {
-        console.error("Failed to add commitlint hook:", err);
-      }
-    }
+    installHusky(projectDir, answers);
   }
 
   // 更新package.json文件，添加依赖信息
@@ -572,10 +201,10 @@ export async function cmdInit(
 }
 
 /**
- * @brief 创建初始化项目命令
- * @return {Command} 配置好的Command实例
+ * 创建初始化项目命令
+ * @return 配置好的Command实例
  */
-function createInitCommand(): Command {
+export function createInitCommand(): Command {
   const program = new Command("init")
     .description("Initialize a new tdoc project")
     .argument("[dirName]", "项目目录名")
@@ -584,7 +213,7 @@ function createInitCommand(): Command {
     .option("--scope <scope>", "Set npm package scope (e.g. myorg)")
     .action(async (dirName: string | undefined, options: { yes?: boolean; type?: string; scope?: string }) => {
       try {
-        await cmdInit(dirName, false, options.yes, options.scope, options.type);
+        await cmdInit(dirName, false, options.yes, options.scope, options.type as ProjectType);
       } catch (err) {
         console.error("❌ 初始化项目失败:", (err as Error).message);
         process.exit(1);
