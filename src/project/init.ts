@@ -405,12 +405,18 @@ function updatePackageJsonWithDependencies(projectDir: string, answers: UserConf
     installDevDeps["prettier"] = getLatestVersion("prettier");
   }
 
-  // 添加依赖到package.json
+  // 添加依赖到package.json，保留原有的依赖项
   if (Object.keys(installDevDeps).length > 0) {
-    packageJson.devDependencies = installDevDeps;
+    packageJson.devDependencies = {
+      ...packageJson.devDependencies, // 保留原有的devDependencies
+      ...installDevDeps // 添加新的devDependencies
+    };
   }
   if (Object.keys(installDeps).length > 0) {
-    packageJson.dependencies = installDeps;
+    packageJson.dependencies = {
+      ...packageJson.dependencies, // 保留原有的dependencies
+      ...installDeps // 添加新的dependencies
+    };
   }
 
   // 将更新后的package.json写入文件
