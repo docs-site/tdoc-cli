@@ -7,10 +7,9 @@ import { UserConfig } from "./types";
  * 初始化Git仓库并配置
  * @param projectDir 项目目录路径
  * @param addWorkflow 是否添加GitHub工作流
- * @param projectType 项目类型
  * @throws 如果git初始化失败会抛出错误
  */
-export function initGitRepo(projectDir: string, addWorkflow: boolean, projectType?: string) {
+export function initGitRepo(projectDir: string, addWorkflow: boolean) {
   try {
     // 初始化Git仓库，使用pipe模式隐藏git命令输出
     execSync("git init", { stdio: "pipe" });
@@ -20,7 +19,7 @@ export function initGitRepo(projectDir: string, addWorkflow: boolean, projectTyp
     fs.writeFileSync(path.join(projectDir, ".gitignore"), "node_modules/\n.DS_Store\n.env\n");
 
     // 如果需要添加GitHub工作流
-    if (addWorkflow && projectType !== "c") {
+    if (addWorkflow) {
       const workflowsDir = path.join(__dirname, "../../.github/workflows");
       if (fs.existsSync(workflowsDir)) {
         // 创建工作流目录并复制模板文件

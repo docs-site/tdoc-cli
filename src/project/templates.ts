@@ -48,7 +48,7 @@ export function copyTemplateFiles(projectDir: string, answers: UserConfig, proje
   }
 
   // 复制.vscode配置
-  if (answers.addVscodeConfig && projectType !== "c") {
+  if (answers.addVscodeConfig) {
     const vscodePath = path.join(__dirname, "../../.vscode");
     if (fs.existsSync(vscodePath)) {
       fs.copySync(vscodePath, path.join(projectDir, ".vscode"));
@@ -57,7 +57,7 @@ export function copyTemplateFiles(projectDir: string, answers: UserConfig, proje
   }
 
   // 复制Prettier配置
-  if (answers.addPrettierConfig && projectType !== "c") {
+  if (answers.addPrettierConfig) {
     const prettierRcPath = path.join(__dirname, "../../.prettierrc");
     const prettierIgnorePath = path.join(__dirname, "../../.prettierignore");
 

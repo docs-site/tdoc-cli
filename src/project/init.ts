@@ -87,9 +87,10 @@ async function collectUserInput(dirName?: string, yes = false, scope?: string, p
           default: true
         });
 
-  const addWorkflow =
-    yes || projectType === "c"
-      ? true
+  const addWorkflow = yes
+    ? true
+    : projectType === "c"
+      ? false // C语言项目不需要GitHub Actions工作流
       : await confirm({
           message: "Add GitHub Actions workflow for auto-publish?",
           default: true
@@ -102,17 +103,19 @@ async function collectUserInput(dirName?: string, yes = false, scope?: string, p
         default: true
       });
 
-  const addVscodeConfig =
-    yes || projectType === "c"
-      ? true
+  const addVscodeConfig = yes
+    ? true
+    : projectType === "c"
+      ? false // C语言项目不需要.vscode配置
       : await confirm({
           message: "Add .vscode project configuration?",
           default: true
         });
 
-  const addPrettierConfig =
-    yes || projectType === "c"
-      ? true
+  const addPrettierConfig = yes
+    ? true
+    : projectType === "c"
+      ? false // C语言项目不需要Prettier配置
       : await confirm({
           message: "Add Prettier configuration (will install prettier package)?",
           default: true
@@ -173,7 +176,7 @@ export async function cmdInit(
 
   // 初始化Git仓库
   if (answers.initGit) {
-    initGitRepo(projectDir, answers.addWorkflow, projectType);
+    initGitRepo(projectDir, answers.addWorkflow);
   }
 
   // 复制模板文件
