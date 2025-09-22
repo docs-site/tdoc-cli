@@ -1,0 +1,13 @@
+{
+  "name": "npm-template",
+  "private": true,
+  "version": "1.0.0",
+  "description": "sumu's TypeScript project!",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"[Error] no test specified!\""
+  },
+  "keywords": [],
+  "author": "sumu",
+  "license": "MIT"
+}

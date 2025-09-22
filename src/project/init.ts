@@ -247,28 +247,19 @@ function copyTemplateFiles(projectDir: string, answers: UserConfig) {
  * @param {string} [scope] - 可选的npm包作用域
  */
 function createPackageJson(projectDir: string, answers: UserConfig, scope?: string) {
-  // 构建package.json内容
-  const packageJson = {
-    // 处理包名：如果有作用域则添加作用域前缀
-    name: scope
-      ? `@${scope}/${answers.name.toLowerCase().replace(/\s+/g, "-")}`
-      : answers.name.toLowerCase().replace(/\s+/g, "-"),
-    version: "1.0.0", // 默认版本号
-    description: answers.description,
-    main: "index.js", // 默认入口文件
-    scripts: {
-      test: 'echo "Error: no test specified" && exit 1', // 默认测试脚本
-      // 如果配置了Prettier，添加格式化脚本
-      ...(answers.addPrettierConfig
-        ? {
-            "format:check": "prettier . --check",
-            "format:fix": "prettier . --write"
-          }
-        : {})
-    },
-    author: answers.author,
-    license: answers.license
-  };
+  // 从npm-template/package-template.json读取模板
+  const templatePath = path.join(__dirname, "../../npm-template/package-template.json");
+  const packageJson = JSON.parse(fs.readFileSync(templatePath, "utf8"));
+
+  // 处理包名：如果有作用域则添加作用域前缀
+  packageJson.name = scope
+    ? `@${scope}/${answers.name.toLowerCase().replace(/\s+/g, "-")}`
+    : answers.name.toLowerCase().replace(/\s+/g, "-");
+
+  // 替换其他字段
+  packageJson.description = answers.description;
+  packageJson.author = answers.author;
+  packageJson.license = answers.license;
 
   // 将package.json写入文件，使用2个空格缩进
   fs.writeFileSync(path.join(projectDir, "package.json"), JSON.stringify(packageJson, null, 2));
