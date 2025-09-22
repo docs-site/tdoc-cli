@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.2.5](https://github.com/docs-site/tdoc-cli/compare/v1.2.4...v1.2.5) (2025-09-22)
+
+### Bug Fixes
+
+- **project:** 🐞 修复tdoc init命令创建工程时原有dependencies被覆盖问题 ([adf2d32](https://github.com/docs-site/tdoc-cli/commit/adf2d323172f7c320b3aace0e322abe65059e70e))
+
+### Code Refactoring
+
+- **project:** ♻️ 优化tdoc init对-t参数的处理 ([d4f5733](https://github.com/docs-site/tdoc-cli/commit/d4f573301d7ead0a9cdfc6203a12bfa41679c643))
+- **project:** ♻️ 优化tdoc init命令结构 ([02d418f](https://github.com/docs-site/tdoc-cli/commit/02d418fce53e8335ca052644b8a8747638edc385))
+- **project:** ♻️ init命令移动到project目录 ([1929517](https://github.com/docs-site/tdoc-cli/commit/19295176bc8109157f613a5f4da22aed9a207090))
+- **project:** ♻️ tdoc init命令改为从模板生成package.json ([5b5ef98](https://github.com/docs-site/tdoc-cli/commit/5b5ef986cd333978e98cf5377b133bff2f2d64ad))
+- **project:** ♻️ tdoc init命令添加husky安装选项 ([306a391](https://github.com/docs-site/tdoc-cli/commit/306a391d87c641a5897859fe4fced16d5d521660))
+- **project:** ♻️ tdoc init命令支持创建c语言模板工程 ([d72da58](https://github.com/docs-site/tdoc-cli/commit/d72da58a765206775681a5c1028cbe1c7bf22d3e))
+- **project:** ♻️ tdoc init命令支持添加commit信息验证工具 ([a0d2878](https://github.com/docs-site/tdoc-cli/commit/a0d2878e7451a75a4cbb754ab8f4b2dad156d127))
+- **project:** ♻️ tdoc init命令支持添加cz-git相关内容 ([3779780](https://github.com/docs-site/tdoc-cli/commit/3779780b386fe2e3bdcad78425939fb6c7a98b7a))
+
 ### [1.2.4](https://github.com/docs-site/tdoc-cli/compare/v1.2.0...v1.2.4) (2025-09-17)
 
 ### Features
