@@ -76,7 +76,7 @@ function createProjectDir(dirName?: string): string {
  * @param {string} [scope] - 可选的npm包作用域
  * @returns {Promise<Object>} 包含用户配置的对象
  */
-async function collectUserInput(dirName?: string, yes = false, scope?: string) {
+async function collectUserInput(dirName?: string, yes = false, scope?: string, projectType?: string) {
   // 自动模式使用默认值，否则通过交互式提示获取用户输入
   const name = yes
     ? dirName
@@ -148,12 +148,13 @@ async function collectUserInput(dirName?: string, yes = false, scope?: string) {
           default: true
         });
 
-  const addWorkflow = yes
-    ? true
-    : await confirm({
-        message: "Add GitHub Actions workflow for auto-publish?",
-        default: true
-      });
+  const addWorkflow =
+    yes || projectType === "c"
+      ? true
+      : await confirm({
+          message: "Add GitHub Actions workflow for auto-publish?",
+          default: true
+        });
 
   const addEditorConfig = yes
     ? true
@@ -162,19 +163,21 @@ async function collectUserInput(dirName?: string, yes = false, scope?: string) {
         default: true
       });
 
-  const addVscodeConfig = yes
-    ? true
-    : await confirm({
-        message: "Add .vscode project configuration?",
-        default: true
-      });
+  const addVscodeConfig =
+    yes || projectType === "c"
+      ? true
+      : await confirm({
+          message: "Add .vscode project configuration?",
+          default: true
+        });
 
-  const addPrettierConfig = yes
-    ? true
-    : await confirm({
-        message: "Add Prettier configuration (will install prettier package)?",
-        default: true
-      });
+  const addPrettierConfig =
+    yes || projectType === "c"
+      ? true
+      : await confirm({
+          message: "Add Prettier configuration (will install prettier package)?",
+          default: true
+        });
 
   const installDeps = yes ? false : true; // 默认为true，后续会根据confirmDependencies的结果更新
 
@@ -238,7 +241,7 @@ async function confirmDependencies(answers: UserConfig) {
  * @param {boolean} addWorkflow - 是否添加GitHub工作流
  * @throws 如果git初始化失败会抛出错误
  */
-function initGitRepo(projectDir: string, addWorkflow: boolean) {
+function initGitRepo(projectDir: string, addWorkflow: boolean, projectType?: string) {
   try {
     // 初始化Git仓库，使用pipe模式隐藏git命令输出
     execSync("git init", { stdio: "pipe" });
@@ -248,7 +251,7 @@ function initGitRepo(projectDir: string, addWorkflow: boolean) {
     fs.writeFileSync(path.join(projectDir, ".gitignore"), "node_modules/\n.DS_Store\n.env\n");
 
     // 如果需要添加GitHub工作流
-    if (addWorkflow) {
+    if (addWorkflow && projectType !== "c") {
       const workflowsDir = path.join(__dirname, "../../.github/workflows");
       if (fs.existsSync(workflowsDir)) {
         // 创建工作流目录并复制模板文件
@@ -270,7 +273,7 @@ function initGitRepo(projectDir: string, addWorkflow: boolean) {
  * @param {string} projectDir - 项目目录路径
  * @param {Object} answers - 用户配置对象
  */
-function copyTemplateFiles(projectDir: string, answers: UserConfig) {
+function copyTemplateFiles(projectDir: string, answers: UserConfig, projectType?: string) {
   // 处理README文件：
   // 1. 尝试从模板目录读取README模板
   const readmeTemplatePath = path.join(__dirname, "../../npm-template/README.md");
@@ -287,6 +290,19 @@ function copyTemplateFiles(projectDir: string, answers: UserConfig) {
     );
   }
 
+  // 处理.gitignore文件
+  if (projectType === "c") {
+    // C语言项目使用特定的.gitignore模板
+    const gitignoreTemplatePath = path.join(__dirname, "../../npm-template/c.gitignore");
+    if (fs.existsSync(gitignoreTemplatePath)) {
+      fs.copyFileSync(gitignoreTemplatePath, path.join(projectDir, ".gitignore"));
+      console.log("✅ .gitignore copied from c.gitignore template");
+    }
+  } else {
+    // 其他项目类型使用默认的.gitignore
+    fs.writeFileSync(path.join(projectDir, ".gitignore"), "node_modules/\n.DS_Store\n.env\n");
+  }
+
   // 复制.editorconfig
   if (answers.addEditorConfig) {
     const editorConfigPath = path.join(__dirname, "../../.editorconfig");
@@ -297,7 +313,7 @@ function copyTemplateFiles(projectDir: string, answers: UserConfig) {
   }
 
   // 复制.vscode配置
-  if (answers.addVscodeConfig) {
+  if (answers.addVscodeConfig && projectType !== "c") {
     const vscodePath = path.join(__dirname, "../../.vscode");
     if (fs.existsSync(vscodePath)) {
       fs.copySync(vscodePath, path.join(projectDir, ".vscode"));
@@ -306,7 +322,7 @@ function copyTemplateFiles(projectDir: string, answers: UserConfig) {
   }
 
   // 复制Prettier配置
-  if (answers.addPrettierConfig) {
+  if (answers.addPrettierConfig && projectType !== "c") {
     const prettierRcPath = path.join(__dirname, "../../.prettierrc");
     const prettierIgnorePath = path.join(__dirname, "../../.prettierignore");
 
@@ -470,25 +486,31 @@ function installDependencies(projectDir: string) {
  * @param {string} [scope] - 可选的npm包作用域
  * @returns {Promise<void>}
  */
-export async function cmdInit(dirName?: string, skipPrompts = false, yes = false, scope?: string) {
+export async function cmdInit(
+  dirName?: string,
+  skipPrompts = false,
+  yes = false,
+  scope?: string,
+  projectType?: string
+) {
   console.log("Welcome to tdoc project initialization\n");
 
   // 创建项目目录
   const projectDir = createProjectDir(dirName);
 
   // 收集用户输入
-  const answers = await collectUserInput(dirName, yes || skipPrompts, scope);
+  const answers = await collectUserInput(dirName, yes || skipPrompts, scope, projectType);
 
   // 切换到项目目录
   process.chdir(projectDir);
 
   // 初始化Git仓库
   if (answers.initGit) {
-    initGitRepo(projectDir, answers.addWorkflow);
+    initGitRepo(projectDir, answers.addWorkflow, projectType);
   }
 
   // 复制模板文件
-  copyTemplateFiles(projectDir, answers);
+  copyTemplateFiles(projectDir, answers, projectType);
 
   // 创建package.json
   createPackageJson(projectDir, answers, scope);
@@ -558,10 +580,11 @@ function createInitCommand(): Command {
     .description("Initialize a new tdoc project")
     .argument("[dirName]", "项目目录名")
     .option("-y, --yes", "Skip prompts and use default values")
+    .option("-t, --type <type>", "Project type (e.g. c for C language project)")
     .option("--scope <scope>", "Set npm package scope (e.g. myorg)")
-    .action(async (dirName: string | undefined, options: { yes?: boolean; scope?: string }) => {
+    .action(async (dirName: string | undefined, options: { yes?: boolean; type?: string; scope?: string }) => {
       try {
-        await cmdInit(dirName, false, options.yes, options.scope);
+        await cmdInit(dirName, false, options.yes, options.scope, options.type);
       } catch (err) {
         console.error("❌ 初始化项目失败:", (err as Error).message);
         process.exit(1);
