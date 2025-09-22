@@ -39,6 +39,7 @@ interface UserConfig {
   installDeps: boolean;
   installHusky: boolean;
   installCommitizen: boolean;
+  installCommitlint: boolean;
 }
 
 /**
@@ -139,6 +140,14 @@ async function collectUserInput(dirName?: string, yes = false, scope?: string) {
           default: true
         });
 
+  const installCommitlint =
+    yes || !initGit || !installHusky
+      ? false
+      : await confirm({
+          message: "Install commitlint for commit message validation?",
+          default: true
+        });
+
   const addWorkflow = yes
     ? true
     : await confirm({
@@ -181,7 +190,8 @@ async function collectUserInput(dirName?: string, yes = false, scope?: string) {
     addVscodeConfig,
     addPrettierConfig,
     installDeps,
-    installCommitizen
+    installCommitizen,
+    installCommitlint
   };
 
   // 确认依赖安装选择
@@ -205,6 +215,11 @@ async function confirmDependencies(answers: UserConfig) {
   // 添加commitizen相关依赖
   if (answers.installCommitizen) {
     installDevDeps.push("commitizen", "cz-git", "@commitlint/config-conventional");
+  }
+
+  // 添加commitlint相关依赖
+  if (answers.installCommitlint) {
+    installDevDeps.push("@commitlint/config-conventional");
   }
 
   console.log("\nWill install the following dependencies:");
@@ -405,6 +420,12 @@ function updatePackageJsonWithDependencies(projectDir: string, answers: UserConf
     installDevDeps["prettier"] = getLatestVersion("prettier");
   }
 
+  // 添加commitlint依赖
+  if (answers.installCommitlint) {
+    installDevDeps["@commitlint/cli"] = getLatestVersion("@commitlint/cli");
+    installDevDeps["@commitlint/config-conventional"] = getLatestVersion("@commitlint/config-conventional");
+  }
+
   // 添加依赖到package.json，保留原有的依赖项
   if (Object.keys(installDevDeps).length > 0) {
     packageJson.devDependencies = {
@@ -480,6 +501,38 @@ export async function cmdInit(dirName?: string, skipPrompts = false, yes = false
       console.log("✅ Husky installed successfully!");
     } catch (err) {
       console.error("Failed to install husky:", err);
+    }
+
+    // 添加commitlint钩子
+    if (answers.installCommitlint) {
+      try {
+        console.log("Adding commitlint hook...");
+        const commitMsgPath = path.join(projectDir, ".husky", "commit-msg");
+        const commitMsgContent = "npx --no-install commitlint --edit $1\n";
+
+        // 确保.husky目录存在
+        fs.ensureDirSync(path.join(projectDir, ".husky"));
+
+        // 如果文件已存在，则追加内容，否则创建新文件
+        if (fs.existsSync(commitMsgPath)) {
+          // 读取现有内容
+          const existingContent = fs.readFileSync(commitMsgPath, "utf8");
+          // 检查是否已包含该命令
+          if (!existingContent.includes("npx --no-install commitlint --edit $1")) {
+            fs.appendFileSync(commitMsgPath, commitMsgContent);
+          }
+        } else {
+          // 创建新文件，添加shebang和命令
+          fs.writeFileSync(commitMsgPath, `#!/usr/bin/env sh\n${commitMsgContent}`);
+        }
+
+        // 确保文件具有可执行权限
+        fs.chmodSync(commitMsgPath, 0o755);
+
+        console.log("✅ Commitlint hook added successfully!");
+      } catch (err) {
+        console.error("Failed to add commitlint hook:", err);
+      }
     }
   }
 
