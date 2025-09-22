@@ -21,6 +21,7 @@ interface UserConfig {
   addVscodeConfig: boolean;
   addPrettierConfig: boolean;
   installDeps: boolean;
+  installHusky: boolean;
 }
 
 /**
@@ -59,76 +60,102 @@ function createProjectDir(dirName?: string): string {
  */
 async function collectUserInput(dirName?: string, yes = false, scope?: string) {
   // 自动模式使用默认值，否则通过交互式提示获取用户输入
+  const name = yes
+    ? dirName
+      ? path.basename(dirName)
+      : "my-project"
+    : await input({
+        message: "Project name:",
+        default:
+          dirName && scope ? `@${scope}/${path.basename(dirName)}` : dirName ? path.basename(dirName) : undefined,
+        validate: (input: string) => input.trim() !== "" || "Project name is required"
+      });
+
+  const description = yes
+    ? ""
+    : await input({
+        message: "Project description:",
+        default: ""
+      });
+
+  const author = yes
+    ? ""
+    : await input({
+        message: "Author:",
+        default: ""
+      });
+
+  const license = yes
+    ? "MIT"
+    : await select({
+        message: "License:",
+        choices: [
+          { value: "MIT" },
+          { value: "Apache-2.0" },
+          { value: "GPL-3.0" },
+          { value: "ISC" },
+          { value: "Unlicense" }
+        ],
+        default: "MIT"
+      });
+
+  const initGit = yes
+    ? true
+    : await confirm({
+        message: "Initialize git repository?",
+        default: true
+      });
+
+  const installHusky =
+    yes || !initGit
+      ? false
+      : await confirm({
+          message: "Install husky for git hooks?",
+          default: true
+        });
+
+  const addWorkflow = yes
+    ? true
+    : await confirm({
+        message: "Add GitHub Actions workflow for auto-publish?",
+        default: true
+      });
+
+  const addEditorConfig = yes
+    ? true
+    : await confirm({
+        message: "Add .editorconfig configuration file?",
+        default: true
+      });
+
+  const addVscodeConfig = yes
+    ? true
+    : await confirm({
+        message: "Add .vscode project configuration?",
+        default: true
+      });
+
+  const addPrettierConfig = yes
+    ? true
+    : await confirm({
+        message: "Add Prettier configuration (will install prettier package)?",
+        default: true
+      });
+
+  const installDeps = yes ? false : await confirmDependencies();
+
   return {
-    // 项目名称处理逻辑：
-    // - 自动模式：使用目录名或默认值'my-project'，考虑作用域
-    // - 交互模式：提示用户输入，并验证非空
-    name: yes
-      ? dirName
-        ? path.basename(dirName)
-        : "my-project"
-      : await input({
-          message: "Project name:",
-          default:
-            dirName && scope ? `@${scope}/${path.basename(dirName)}` : dirName ? path.basename(dirName) : undefined,
-          validate: (input: string) => input.trim() !== "" || "Project name is required"
-        }),
-    description: yes
-      ? ""
-      : await input({
-          message: "Project description:",
-          default: ""
-        }),
-    author: yes
-      ? ""
-      : await input({
-          message: "Author:",
-          default: ""
-        }),
-    license: yes
-      ? "MIT"
-      : await select({
-          message: "License:",
-          choices: [
-            { value: "MIT" },
-            { value: "Apache-2.0" },
-            { value: "GPL-3.0" },
-            { value: "ISC" },
-            { value: "Unlicense" }
-          ],
-          default: "MIT"
-        }),
-    initGit: yes
-      ? true
-      : await confirm({
-          message: "Initialize git repository?",
-          default: true
-        }),
-    addWorkflow: yes
-      ? true
-      : await confirm({
-          message: "Add GitHub Actions workflow for auto-publish?",
-          default: true
-        }),
-    addEditorConfig: yes
-      ? true
-      : await confirm({
-          message: "Add .editorconfig configuration file?",
-          default: true
-        }),
-    addVscodeConfig: yes
-      ? true
-      : await confirm({
-          message: "Add .vscode project configuration?",
-          default: true
-        }),
-    addPrettierConfig: yes
-      ? true
-      : await confirm({
-          message: "Add Prettier configuration (will install prettier package)?",
-          default: true
-        }),
-    installDeps: yes ? false : await confirmDependencies()
+    name,
+    description,
+    author,
+    license,
+    initGit,
+    installHusky,
+    addWorkflow,
+    addEditorConfig,
+    addVscodeConfig,
+    addPrettierConfig,
+    installDeps
   };
 }
 
@@ -328,6 +355,17 @@ export async function cmdInit(dirName?: string, skipPrompts = false, yes = false
 
   // 创建package.json
   createPackageJson(projectDir, answers, scope);
+
+  // 安装husky
+  if (answers.installHusky && answers.initGit) {
+    try {
+      console.log("Installing husky...");
+      execSync("npx husky-init", { stdio: "inherit" });
+      console.log("✅ Husky installed successfully!");
+    } catch (err) {
+      console.error("Failed to install husky:", err);
+    }
+  }
 
   // 安装依赖
   if (answers.installDeps) {
