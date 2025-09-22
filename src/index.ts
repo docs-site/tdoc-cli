@@ -17,7 +17,7 @@ import createMarkdownCommands from "./markdown";
 import mistCommand from "./mist/mist-cli";
 import createGitSubmoduleCommand from "./cmd/cmd_git_submodule";
 import createLoginCommand from "./inquirer-cmd/login";
-import createInitCommand from "./inquirer-cmd/init";
+import createInitCommand from "./project/init";
 /**
  * @brief 创建commander的Command实例
  */
