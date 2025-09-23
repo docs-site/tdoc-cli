@@ -189,6 +189,16 @@ function getConfigReplacementRules(params: UpdateConfigParams): ConfigReplacemen
       search: /https:\/\/github\.com\/docs-site\/vitepress-theme-mist\.git/,
       replace: `https://github.com/docs-site/${params.dirName}.git`,
       description: "更新GitHub链接"
+    },
+    {
+      search: /math:\s*false/,
+      replace: `math: true`,
+      description: "开启数学公式支持"
+    },
+    {
+      search: /\/\/\s*rewrites:/,
+      replace: `rewrites:`,
+      description: "启用rewrites配置"
     }
   ];
 }
