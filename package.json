@@ -21,10 +21,10 @@
     "lint:lint-staged": "lint-staged -c .husky/lintstagedrc.cjs",
     "prepare": "husky install",
     "cz": "git add . && git-cz",
-    "release-major": "standard-version --release-as major",
-    "release-minor": "standard-version --release-as minor",
-    "release-patch": "standard-version --release-as patch",
-    "release-as": "standard-version --release-as",
+    "release-major": "standard-version --no-verify --release-as major",
+    "release-minor": "standard-version --no-verify --release-as minor",
+    "release-patch": "standard-version --no-verify --release-as patch",
+    "release-as": "standard-version --no-verify --release-as",
     "release-prerelease": "standard-version --prerelease"
   },
   "repository": {
@@ -75,6 +75,11 @@
   "config": {
     "commitizen": {
       "path": "node_modules/cz-git"
+    }
+  },
+  "standard-version": {
+    "scripts": {
+      "postchangelog": "git add CHANGELOG.md && npm run lint:lint-staged"
     }
   }
 }
