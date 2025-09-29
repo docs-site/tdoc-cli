@@ -3,5 +3,6 @@ dist/
 
 test/**/*.md
 test/**/*.js
+!test/**/test*.js
 !test/**/README.md
 *-docs
