@@ -14,6 +14,8 @@ import { randomUUID } from "crypto";
 
 // 定义sdoc目录名，方便后期修改
 const SDOC_DIR_NAME = "sdoc";
+// 定义src目录名，方便后期修改
+const SRC_DIR_NAME = "src";
 
 const PERMALINK_PREFIX = "docs";
 /**
@@ -281,10 +283,27 @@ async function processPathWithMap(outputDir: string, mapFile?: string): Promise<
     // 获取输出目录的绝对路径
     const absoluteOutputDir = path.resolve(outputDir);
 
-    // 检查路径中是否含有sdoc目录
+    // 检查路径中是否含有sdoc目录或src目录
     const sdocIndex = absoluteOutputDir.indexOf(SDOC_DIR_NAME);
-    if (sdocIndex === -1) {
-      console.error(`❌ 输出目录中不包含'${SDOC_DIR_NAME}': ${absoluteOutputDir}`);
+    const srcIndex = absoluteOutputDir.indexOf(SRC_DIR_NAME);
+
+    // 确定根目录类型和索引
+    let rootDirType: string;
+    let rootIndex: number;
+
+    // 优先判断src目录下的sdoc目录
+    if (sdocIndex !== -1) {
+      rootDirType = SDOC_DIR_NAME;
+      rootIndex = sdocIndex;
+    }
+    // 如果没有sdoc目录，则判断src目录
+    else if (srcIndex !== -1) {
+      rootDirType = SRC_DIR_NAME;
+      rootIndex = srcIndex;
+    }
+    // 如果都没有，则返回错误
+    else {
+      console.error(`❌ 输出目录中不包含'${SDOC_DIR_NAME}'或'${SRC_DIR_NAME}': ${absoluteOutputDir}`);
       return null;
     }
 
@@ -295,17 +314,17 @@ async function processPathWithMap(outputDir: string, mapFile?: string): Promise<
       pathMapPath = path.isAbsolute(mapFile) ? mapFile : path.join(process.cwd(), mapFile);
     } else {
       // 如果没有提供映射文件路径，使用默认路径
-      // 从sdoc开始截断路径
-      const sdocPath = absoluteOutputDir.substring(0, sdocIndex + SDOC_DIR_NAME.length);
+      // 从根目录开始截断路径
+      const rootPath = absoluteOutputDir.substring(0, rootIndex + rootDirType.length);
       // 默认映射文件路径 (只支持.js类型)
-      pathMapPath = path.join(sdocPath, "path-map.js");
+      pathMapPath = path.join(rootPath, "path-map.js");
     }
 
     // 检查映射文件是否存在
     if (!fs.existsSync(pathMapPath)) {
       console.error(`❌ 路径映射文件不存在: ${pathMapPath}`);
       console.error(
-        `💡 提示: 使用 'tdoc m:m -d path' 命令生成路径映射文件, path 需要包含 ${SDOC_DIR_NAME}, 都是以${SDOC_DIR_NAME}为基础路劲`
+        `💡 提示: 使用 'tdoc m:m -d path' 命令生成路径映射文件, path 需要包含 ${SDOC_DIR_NAME} 或 ${SRC_DIR_NAME}`
       );
       return null;
     }
@@ -328,17 +347,19 @@ async function processPathWithMap(outputDir: string, mapFile?: string): Promise<
     // 处理ES6模块的default导出
     const pathMap: Record<string, string> = loadedMap.default || loadedMap;
 
-    // 从sdoc开始截断路径
-    const sdocPath = absoluteOutputDir.substring(sdocIndex);
+    // 从根目录开始截断路径
+    const rootPath = absoluteOutputDir.substring(rootIndex);
 
     // 分割路径为各个部分并进行映射
-    const pathParts = sdocPath.split(path.sep);
+    const pathParts = rootPath.split(path.sep);
     const mappedParts: string[] = [];
 
     for (const part of pathParts) {
-      if (part === SDOC_DIR_NAME) {
-        // 直接添加sdoc
-        mappedParts.push(part);
+      if (part === rootDirType) {
+        // 如果是src目录，则不添加到映射路径中
+        if (rootDirType !== SRC_DIR_NAME) {
+          mappedParts.push(part);
+        }
       } else if (pathMap[part]) {
         // 如果在映射表中找到，则使用映射值
         mappedParts.push(pathMap[part]);
