@@ -13,9 +13,14 @@ import { Command } from "commander";
 
 // 定义sdoc目录名，方便后期修改
 const SDOC_DIR_NAME = "sdoc";
+// 定义src目录名，方便后期修改
+const SRC_DIR_NAME = "src";
+// 定义预定义的要忽略的目录列表
+const PREDEFINED_EXCLUDE_DIRS = new Set([".vitepress", "public"]);
 
 interface MMOptions {
   dir?: string;
+  exclude?: string;
 }
 
 /**
@@ -43,12 +48,18 @@ function findSdocRoot(dirPath: string): string | null {
  * @param {string} basePath 基准路径，用于计算相对路径
  * @return {Map<string, string>} 目录名到相对路径的映射 (name -> relativePath)
  */
-function scanDirectories(dirPath: string, basePath: string): Map<string, string> {
+function scanDirectories(dirPath: string, basePath: string, excludeDirs: Set<string> = new Set()): Map<string, string> {
   const dirMap = new Map<string, string>();
   const entries = fs.readdirSync(dirPath, { withFileTypes: true });
 
   for (const entry of entries) {
     if (entry.isDirectory()) {
+      // 如果目录在排除列表中，则跳过
+      if (excludeDirs.has(entry.name)) {
+        // console.log(`🔍 跳过排除的目录 "${entry.name}"`);
+        continue;
+      }
+
       const fullPath = path.join(dirPath, entry.name);
       // 检查当前目录下是否有同名的.md文档，若有则跳过
       const mdFilePath = path.join(dirPath, entry.name + ".md");
@@ -64,7 +75,7 @@ function scanDirectories(dirPath: string, basePath: string): Map<string, string>
       dirMap.set(entry.name, relativePath);
 
       // 递归扫描子目录并合并结果
-      const subMap = scanDirectories(fullPath, basePath);
+      const subMap = scanDirectories(fullPath, basePath, excludeDirs);
       for (const [name, relPath] of subMap) {
         dirMap.set(name, relPath);
       }
@@ -110,9 +121,9 @@ function readExistingMap(filePath: string): Map<string, string> {
  * @param {string} dirPath sdoc目录路径
  * @return {void}
  */
-function generatePathMap(dirPath: string): void {
+function generatePathMap(dirPath: string, excludeDirs: Set<string> = new Set()): void {
   // 获取目录映射
-  const dirMap = scanDirectories(dirPath, dirPath);
+  const dirMap = scanDirectories(dirPath, dirPath, excludeDirs);
 
   // 读取现有文件中的键值对
   const outputPath = path.join(dirPath, "path-map.js");
@@ -164,23 +175,52 @@ function main(inputPath: string, options: MMOptions): void {
 
     console.log(`🔍 正在分析路径: ${scanPath}`);
 
-    // 查找sdoc根目录
-    let sdocRoot = findSdocRoot(scanPath);
-
-    // 如果在指定目录中没有找到sdoc目录，则检查扫描目录是否就是sdoc目录
-    if (!sdocRoot && path.basename(scanPath) === SDOC_DIR_NAME) {
-      sdocRoot = scanPath;
+    // 如果用户明确指定了目录，首先检查该目录是否是sdoc或src目录
+    let rootPath: string | null = null;
+    if (options.dir || inputPath) {
+      const basename = path.basename(scanPath);
+      if (basename === SDOC_DIR_NAME || basename === SRC_DIR_NAME) {
+        rootPath = scanPath;
+      }
     }
 
-    if (!sdocRoot) {
-      console.error("❌ 未找到sdoc目录");
+    // 如果没有明确指定目录或指定的目录不是sdoc/src目录，则查找sdoc根目录
+    if (!rootPath) {
+      rootPath = findSdocRoot(scanPath);
+    }
+
+    // 如果在指定目录中没有找到sdoc目录，则检查扫描目录是否就是sdoc目录
+    if (!rootPath && path.basename(scanPath) === SDOC_DIR_NAME) {
+      rootPath = scanPath;
+    }
+
+    // 如果没有找到sdoc目录，则检查src目录
+    if (!rootPath) {
+      const srcPath = path.join(scanPath, SRC_DIR_NAME);
+      if (fs.existsSync(srcPath) && fs.statSync(srcPath).isDirectory()) {
+        rootPath = srcPath;
+      }
+    }
+
+    if (!rootPath) {
+      console.error("❌ 未找到sdoc目录或src目录");
       process.exit(1);
     }
 
-    console.log(`📁 找到sdoc根目录: ${sdocRoot}`);
+    console.log(`📁 找到根目录: ${rootPath}`);
+
+    // 解析排除目录列表
+    const excludeDirs: Set<string> = new Set(PREDEFINED_EXCLUDE_DIRS);
+    if (options.exclude) {
+      const userExcludeDirs = options.exclude.split(",").map((dir) => dir.trim());
+      userExcludeDirs.forEach((dir) => excludeDirs.add(dir));
+      console.log(`📁 排除目录列表: ${Array.from(excludeDirs).join(", ")}`);
+    } else if (PREDEFINED_EXCLUDE_DIRS.size > 0) {
+      console.log(`📁 排除目录列表: ${Array.from(PREDEFINED_EXCLUDE_DIRS).join(", ")}`);
+    }
 
     // 生成path-map.js文件
-    generatePathMap(sdocRoot);
+    generatePathMap(rootPath, excludeDirs);
 
     // console.log('✅ 命令执行完成');
     process.exit(0);
@@ -198,6 +238,7 @@ function createGenerateMapCommand(): Command {
   const program = new Command("m:m")
     .description("扫描目录结构并生成path-map.js文件")
     .option("-d, --dir <path>", "指定要扫描的目录路径")
+    .option("-e, --exclude <dirs>", "指定要排除的目录名，多个目录用逗号分隔")
     .arguments("[path]")
     .action((path, options: MMOptions) => {
       main(path, options);
