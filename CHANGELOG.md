@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.2.7](https://github.com/docs-site/tdoc-cli/compare/v1.2.6...v1.2.7) (2025-09-29)
+
+### Features
+
+- **test:** 🚀 添加markdown命令测试脚本 ([9222f45](https://github.com/docs-site/tdoc-cli/commit/9222f457a4a1b7f27f3201aaca517f4ce4c8c7eb))
+
+### Others
+
+- **standard-version:** 🔨 优化standard-version工具逻辑 ([55affa7](https://github.com/docs-site/tdoc-cli/commit/55affa7a1a70c0273b5a08bf017faa94e77ff323))
+
+### Code Refactoring
+
+- **markdown:** ♻️ 生成的永久链接支持src目录规则 ([092380b](https://github.com/docs-site/tdoc-cli/commit/092380b2c9294e24ffb079c69e0fa721fa3f3e5b))
+- **markdown:** ♻️ tdoc m:m 命令支持检测src目录 ([da65eb4](https://github.com/docs-site/tdoc-cli/commit/da65eb43ba4295201302226ae975f3af7e55a56a))
+
 ### [1.2.6](https://github.com/docs-site/tdoc-cli/compare/v1.2.4...v1.2.6) (2025-09-23)
 
 ### Bug Fixes
