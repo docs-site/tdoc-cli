@@ -134,6 +134,32 @@ function findAndBackupFiles(
 }
 
 /**
+ * 检测数字开头的目录
+ * @param dirPath - 要检测的目录路径
+ * @returns 数字开头目录的路径数组
+ */
+function detectNumberedDirectories(dirPath: string): string[] {
+  if (!fs.existsSync(dirPath)) {
+    return [];
+  }
+
+  const items = fs.readdirSync(dirPath, { withFileTypes: true });
+  const numberedDirs: string[] = [];
+
+  items.forEach((item) => {
+    if (item.isDirectory()) {
+      const dirName = item.name;
+      // 匹配以数字加点或-开头的目录名，例如 "01.xxx" 或 "01-xxx"
+      if (/^\d+[.-]/.test(dirName)) {
+        numberedDirs.push(path.join(dirPath, dirName));
+      }
+    }
+  });
+
+  return numberedDirs;
+}
+
+/**
  * 备份 Office 文档主函数
  * @param debugMode - 是否启用调试模式
  * @param backupDir - 自定义备份目录（可选）
@@ -158,15 +184,35 @@ function backupOfficeDocuments(debugMode: boolean = false, backupDir?: string): 
     console.log("🏗️  工程目录名:", projectName);
 
     // 源目录路径
-    const sourceDirPath = path.join(currentDir, "src", "sdoc");
-    console.log("📦 源目录路径:", sourceDirPath);
-    console.log("─".repeat(50));
+    const sdocDirPath = path.join(currentDir, "src", "sdoc");
+    const srcDirPath = path.join(currentDir, "src");
 
-    // 检查源目录是否存在
-    if (!fs.existsSync(sourceDirPath)) {
-      console.error("❌ 错误: sdoc 目录不存在:", sourceDirPath);
-      process.exit(1);
+    // 检测源目录
+    let sourceDirs: string[] = [];
+
+    if (fs.existsSync(sdocDirPath)) {
+      console.log("📦 检测到 sdoc 目录:", sdocDirPath);
+      sourceDirs.push(sdocDirPath);
+    } else {
+      console.log("ℹ️  未检测到 sdoc 目录，正在检测 src 目录下的数字开头目录...");
+
+      // 检测 src 目录下的数字开头目录
+      const numberedDirs = detectNumberedDirectories(srcDirPath);
+      if (numberedDirs.length > 0) {
+        console.log(`📦 检测到 ${numberedDirs.length} 个数字开头目录:`);
+        numberedDirs.forEach((dir) => {
+          const relativePath = path.relative(currentDir, dir);
+          console.log(`   - ${relativePath}`);
+        });
+        sourceDirs = numberedDirs;
+      } else {
+        console.error("❌ 错误: 未找到 sdoc 目录，也未在 src 目录下找到数字开头的目录");
+        console.error("   请确保存在 sdoc 目录或在 src 目录下创建以数字开头（如 01.xxx 或 01-xxx）的目录");
+        process.exit(1);
+      }
     }
+
+    console.log("─".repeat(50));
 
     // 确定备份目录
     let targetBackupDir: string;
@@ -192,7 +238,16 @@ function backupOfficeDocuments(debugMode: boolean = false, backupDir?: string): 
 
     // 递归查找并备份目标文件
     console.log("🔍 正在查找目标文件...");
-    findAndBackupFiles(sourceDirPath, sourceDirPath, targetBackupDir, stats, debugMode);
+
+    sourceDirs.forEach((sourceDir, index) => {
+      const relativeSourcePath = path.relative(currentDir, sourceDir);
+      console.log(`   📁 扫描目录 ${index + 1}/${sourceDirs.length}: ${relativeSourcePath}`);
+
+      // 对于数字开头的目录，使用 src 目录作为基础路径来保留目录结构
+      const baseDir = fs.existsSync(sdocDirPath) ? sourceDir : srcDirPath;
+      findAndBackupFiles(sourceDir, baseDir, targetBackupDir, stats, debugMode);
+    });
+
     console.log(`   - 找到目标文件: ${stats.totalFilesFound} 个`);
 
     console.log("─".repeat(50));
