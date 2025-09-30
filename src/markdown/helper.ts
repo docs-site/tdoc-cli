@@ -191,8 +191,17 @@ function getIndexPath(outputDir: string): string {
     // 将反斜杠替换为正斜杠
     return sdocPath.replace(/\\/g, "/");
   } else {
-    // 若不含sdoc，则使用最后的目录名作为path
-    return dirName;
+    // 检查路径中是否含有'src'目录
+    const srcIndex = absolutePath.indexOf("src");
+    if (srcIndex !== -1) {
+      // 如果含有'src'目录，则从src目录的下一级开始截断
+      const srcPath = absolutePath.substring(srcIndex + "src".length + 1); // +1 是为了跳过路径分隔符
+      // 将反斜杠替换为正斜杠
+      return srcPath.replace(/\\/g, "/");
+    } else {
+      // 若不含sdoc或src，则使用最后的目录名作为path
+      return dirName;
+    }
   }
 }
 
