@@ -21,7 +21,7 @@ import { ConfigReplacementRule, UpdateConfigParams } from "./types";
  * @param {boolean} [yes=false] - 是否自动使用默认值
  * @returns {Promise<void>}
  */
-export async function initMistProject(dirName?: string, yes = false): Promise<void> {
+export async function initMistProject(dirName?: string, yes = false, useGitee = false): Promise<void> {
   console.log("Welcome to tdoc mist project initialization\n");
 
   // 收集用户输入
@@ -49,7 +49,7 @@ export async function initMistProject(dirName?: string, yes = false): Promise<vo
     process.chdir(projectDir);
 
     // 使用git从模板仓库创建新项目（支持GitHub和Gitee回退）
-    await cloneProjectTemplate();
+    await cloneProjectTemplate(useGitee);
 
     // 更新配置文件中的base URL和GitHub链接
     const updateParams = {
@@ -132,12 +132,30 @@ async function collectUserInput(dirName?: string, yes = false) {
 
 /**
  * @brief 从GitHub或Gitee克隆项目模板
+ * @param {boolean} [useGitee=false] - 是否直接使用Gitee
  * @returns {Promise<void>}
  */
-async function cloneProjectTemplate(): Promise<void> {
+async function cloneProjectTemplate(useGitee = false): Promise<void> {
   const githubUrl = "https://github.com/docs-site/vitepress-theme-mist-docs.git";
   const giteeUrl = "https://gitee.com/docs-site/vitepress-theme-mist-docs.git";
 
+  // 如果指定了直接使用Gitee，则直接尝试Gitee
+  if (useGitee) {
+    try {
+      console.log("🔄 正在从Gitee模板克隆Vitepress站点...");
+      execSync(`git clone --depth=1 ${giteeUrl} .`, {
+        stdio: "inherit",
+        timeout: 30000 // 30秒超时
+      });
+      console.log("✅ Gitee克隆成功");
+      return;
+    } catch (giteeError) {
+      console.error("❌ Gitee克隆失败:", (giteeError as Error).message);
+      throw new Error("项目模板下载失败，请检查网络连接或稍后重试");
+    }
+  }
+
+  // 默认逻辑：先尝试GitHub，失败后回退到Gitee
   try {
     console.log("🔄 正在从GitHub模板克隆Vitepress站点...");
     execSync(`git clone --depth=1 ${githubUrl} .`, {
@@ -305,9 +323,10 @@ export function createInitCommand(): Command {
     .description("Initialize a new Vitepress site with mist theme")
     .argument("[dirName]", "项目目录名")
     .option("-y, --yes", "Skip prompts and use default values")
+    .option("--gitee", "直接从Gitee下载模板")
     .action(async (dirName, options) => {
       try {
-        await initMistProject(dirName, options.yes);
+        await initMistProject(dirName, options.yes, options.gitee);
       } catch (err) {
         console.error("❌ 初始化项目失败:", (err as Error).message);
         process.exit(1);
