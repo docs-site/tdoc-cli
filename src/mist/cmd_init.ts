@@ -59,6 +59,7 @@ export async function initMistProject(dirName?: string, yes = false, useGitee = 
     };
     await updateConfigFile(updateParams);
     await updateWorkflowFile(updateParams);
+    await updateCNBFile(updateParams);
 
     // 删除.git目录以解除与模板仓库的关联
     if (fs.existsSync(".git")) {
@@ -311,6 +312,41 @@ async function updateConfigFile(params: UpdateConfigParams): Promise<void> {
     }
   } else {
     console.warn("⚠️  配置文件不存在，跳过更新");
+  }
+}
+
+/**
+ * @brief 更新.cnb.yml文件中的项目名称
+ * @param {UpdateConfigParams} params - 配置更新参数
+ * @returns {Promise<void>}
+ */
+async function updateCNBFile(params: UpdateConfigParams): Promise<void> {
+  const cnbPath = path.join(process.cwd(), ".cnb.yml");
+
+  if (fs.existsSync(cnbPath)) {
+    try {
+      let cnbContent = fs.readFileSync(cnbPath, "utf8");
+      let updated = false;
+
+      // 替换 vitepress-theme-mist-docs 为项目目录名
+      const originalContent = cnbContent;
+      cnbContent = cnbContent.replace(/vitepress-theme-mist-docs/g, params.dirName);
+
+      if (cnbContent !== originalContent) {
+        // 写回文件
+        fs.writeFileSync(cnbPath, cnbContent);
+        console.log("✅ .cnb.yml文件更新完成");
+        updated = true;
+      }
+
+      if (!updated) {
+        console.log("ℹ️  .cnb.yml文件无需更新");
+      }
+    } catch (err) {
+      console.error("❌ 更新.cnb.yml文件失败:", (err as Error).message);
+    }
+  } else {
+    console.warn("⚠️  .cnb.yml文件不存在，跳过更新");
   }
 }
 
