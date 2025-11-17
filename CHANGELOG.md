@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.3.2](https://github.com/docs-site/tdoc-cli/compare/v1.2.6...v1.3.2) (2025-11-17)
+
+### Features
+
+- **mist:** 🚀 mist init命令支持--gitee参数 ([577b7b9](https://github.com/docs-site/tdoc-cli/commit/577b7b96e694222ca9ece9a38ffd4045bab6b5f8))
+- **test:** 🚀 添加markdown命令测试脚本 ([9222f45](https://github.com/docs-site/tdoc-cli/commit/9222f457a4a1b7f27f3201aaca517f4ce4c8c7eb))
+
+### Bug Fixes
+
+- **markdown:** 🐞 修复index模板的path字段计算异常问题 ([60fc48d](https://github.com/docs-site/tdoc-cli/commit/60fc48dcee62333d3cdf764a9b065284c4b7ce11))
+- **mist:** 🐞 mist docs命令支持一些在线流程图工程文件的备份 ([ea9dcce](https://github.com/docs-site/tdoc-cli/commit/ea9dcce91383d04984de7bc48d66a722c90bd04f))
+
+### Code Refactoring
+
+- **markdown:** ♻️ 生成的永久链接支持src目录规则 ([092380b](https://github.com/docs-site/tdoc-cli/commit/092380b2c9294e24ffb079c69e0fa721fa3f3e5b))
+- **markdown:** ♻️ tdoc m:m 命令支持检测src目录 ([da65eb4](https://github.com/docs-site/tdoc-cli/commit/da65eb43ba4295201302226ae975f3af7e55a56a))
+- **mist:** ♻️ mist init工程时更新.cnb.yml文件 ([65fe2fe](https://github.com/docs-site/tdoc-cli/commit/65fe2fe663b5097bc573b37428ad36608bf3778c))
+- **mist:** ♻️ tdoc命令备份文件支持src目录扫描 ([731acfd](https://github.com/docs-site/tdoc-cli/commit/731acfd810aaab8da4bf47372b67a4263fe70542))
+
+### Others
+
+- **release:** 1.2.7 [publish] ([5af6c29](https://github.com/docs-site/tdoc-cli/commit/5af6c29e4ffe35f88b2d0cda18f775e5940870a8))
+- **release:** 1.2.8 [publish] ([8a78b4e](https://github.com/docs-site/tdoc-cli/commit/8a78b4e71254cca56e57a04306f60fc0f6778535))
+- **release:** 1.3.0 [publish] ([6833acd](https://github.com/docs-site/tdoc-cli/commit/6833acd5496a6977e96face31ec8661c349f0149))
+- **release:** 1.3.1 [publish] ([c8a0696](https://github.com/docs-site/tdoc-cli/commit/c8a0696f27309db8689512b6b33ee867e35301f8))
+- **standard-version:** 🔨 优化standard-version工具逻辑 ([55affa7](https://github.com/docs-site/tdoc-cli/commit/55affa7a1a70c0273b5a08bf017faa94e77ff323))
+
 ### [1.3.1](https://github.com/docs-site/tdoc-cli/compare/v1.2.6...v1.3.1) (2025-11-10)
 
 ### Features
