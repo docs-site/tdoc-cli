@@ -13,7 +13,18 @@ import path from "path";
 import { Command } from "commander";
 
 // 需要备份的文件扩展名（来自 .gitignore 第142-149行）
-const TARGET_EXTENSIONS = [".xmind", ".pptx", ".ppt", ".vsdx", ".docx", ".doc", ".xls", ".xlsx"];
+const TARGET_EXTENSIONS = [
+  ".xmind",
+  ".pptx",
+  ".ppt",
+  ".vsdx",
+  ".docx",
+  ".doc",
+  ".xls",
+  ".xlsx",
+  ".excalidraw",
+  ".drawio"
+];
 
 /**
  * 创建目录（如果不存在）
