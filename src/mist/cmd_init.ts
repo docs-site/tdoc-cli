@@ -69,7 +69,7 @@ export async function initMistProject(dirName?: string, yes = false, useGitee = 
     // 初始化新的git仓库
     if (!yes && answers.initGit) {
       console.log("\n🔄 初始化新的git仓库...");
-      execSync("git init", { stdio: "pipe" });
+      execSync("git init -b main", { stdio: "pipe" });
     }
 
     // 安装依赖
