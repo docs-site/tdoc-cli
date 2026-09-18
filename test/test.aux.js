@@ -1,21 +1,34 @@
 /**
- * 汇总测试入口：依次运行辅助工具的全部测试脚本并汇总结果
+ * 汇总测试入口：依次运行全部测试脚本并汇总结果
  * 运行：node test/test.aux.js
  *
- * 当前覆盖的辅助工具命令：
+ * 覆盖的命令：
+ *   辅助工具：
  *   - tree          （test.tree.js）
  *   - img           （test.img.js）
  *   - sidebar       （test.sidebar.js）
  *   - git-submodule （test.git-submodule.js）
+ *   站点与项目初始化：
+ *   - init          （test.init.js，离线）
+ *   - mist docs     （test.mist-docs.js，离线）
+ *   - mist init     （test.mist-init.js，需要网络克隆模板，不可用时自动跳过）
  */
 
 const path = require("path");
 const { spawnSync } = require("child_process");
 
 // 各命令对应的测试脚本
-const suites = ["test.tree.js", "test.img.js", "test.sidebar.js", "test.git-submodule.js"];
+const suites = [
+  "test.tree.js",
+  "test.img.js",
+  "test.sidebar.js",
+  "test.git-submodule.js",
+  "test.init.js",
+  "test.mist-docs.js",
+  "test.mist-init.js"
+];
 
-console.log("🧪 tdoc 辅助工具命令测试（tree / img / sidebar / git-submodule）\n");
+console.log("🧪 tdoc 命令测试（辅助工具 + 站点与项目初始化）\n");
 
 const failedSuites = [];
 
