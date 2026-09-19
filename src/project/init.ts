@@ -87,14 +87,15 @@ async function collectUserInput(dirName?: string, yes = false, scope?: string, p
           default: true
         });
 
-  const addWorkflow = yes
-    ? true
-    : projectType === "c"
+  const addWorkflow =
+    projectType === "c"
       ? false // C语言项目不需要GitHub Actions工作流
-      : await confirm({
-          message: "Add GitHub Actions workflow for auto-publish?",
-          default: true
-        });
+      : yes
+        ? true
+        : await confirm({
+            message: "Add GitHub Actions workflow for auto-publish?",
+            default: true
+          });
 
   const addEditorConfig = yes
     ? true
@@ -103,23 +104,25 @@ async function collectUserInput(dirName?: string, yes = false, scope?: string, p
         default: true
       });
 
-  const addVscodeConfig = yes
-    ? true
-    : projectType === "c"
+  const addVscodeConfig =
+    projectType === "c"
       ? false // C语言项目不需要.vscode配置
-      : await confirm({
-          message: "Add .vscode project configuration?",
-          default: true
-        });
+      : yes
+        ? true
+        : await confirm({
+            message: "Add .vscode project configuration?",
+            default: true
+          });
 
-  const addPrettierConfig = yes
-    ? true
-    : projectType === "c"
+  const addPrettierConfig =
+    projectType === "c"
       ? false // C语言项目不需要Prettier配置
-      : await confirm({
-          message: "Add Prettier configuration (will install prettier package)?",
-          default: true
-        });
+      : yes
+        ? true
+        : await confirm({
+            message: "Add Prettier configuration (will install prettier package)?",
+            default: true
+          });
 
   const installDeps = yes ? false : true; // 默认为true，后续会根据confirmDependencies的结果更新
 
